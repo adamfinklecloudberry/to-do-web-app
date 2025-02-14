@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do List</title>
+    <style>
+        body {
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Center horizontally */
+        justify-content: flex-start; /* Align items to the top */
+        height: 100vh; /* Full viewport height */
+        margin: 0; /* Remove default margin */
+        font-family: Arial, sans-serif; /* Set a default font */
+    }
+
+    h1 {
+        margin-top: 10px; /* Reduced space above the title */
+    }
+
+    .flash-message-container {
+        height: 60px; /* Fixed height for the flash message */
+        overflow: hidden; /* Hide overflow if the message is too long */
+        position: relative; /* Position relative for absolute child */
+    }
+
+    .flash-message {
+        animation: fadeOut 5s forwards; /* Fade out over 5 seconds */
+        margin: 10px 0; /* Space around the message */
+        padding: 10px; /* Padding for better appearance */
+        border: 1px solid #ccc; /* Border for visibility */
+        border-radius: 5px; /* Rounded corners */
+        background-color: #f8f9fa; /* Light background color */
+        display: block; /* Ensure it is displayed */
+    }
+
+    @keyframes fadeOut {
+        0% {
+            opacity: 1; /* Fully visible */
+        }
+        99% {
+            opacity: 1; /* Still visible just before fading out */
+        }
+        100% {
+            opacity: 0; /* Fully transparent */
+            display: none; /* Remove from layout */
+        }
+    }
+
+    .progress-bar {
+        width: 100%; /* Full width */
+        height: 5px; /* Height of the progress bar */
+        background-color: #e0e0e0; /* Light gray background */
+        margin-top: 5px; /* Space above the progress bar */
+        overflow: hidden; /* Hide overflow */
+    }
+
+    .progress {
+        height: 100%; /* Full height */
+        background-color: #007bff; /* Blue color for the progress */
+        width: 100%; /* Start full */
+        animation: decrease 5s linear forwards, fadeOutProgress 5s linear forwards; /* Animate over 5 seconds */
+    }
+
+    @keyframes decrease {
+        0% {
+            width: 100%; /* Start full */
+        }
+        100% {
+            width: 0%; /* End at 0% */
+        }
+    }
+
+    @keyframes fadeOutProgress {
+        0% {
+            opacity: 1; /* Fully visible */
+        }
+        99% {
+            opacity: 1; /* Still visible just before fading out */
+        }
+        100% {
+            opacity: 0; /* Fully transparent */
+            visibility: hidden; /* Hide the element */
+        }
+    }
+
+    ul {
+        list-style-type: none; /* Remove default list styling */
+        padding: 0; /* Remove padding */
+        margin-top: 20px; /* Space above the list */
+        text-align: center; /* Center the list items */
+        max-height: 300px; /* Set a maximum height for the list */
+        overflow-y: auto; /* Enable vertical scrolling */
+        border: 1px solid #ccc; /* Optional: Add a border for visibility */
+        width: 100%; /* Full width */
+        max-width: 400px; /* Optional: Set a max width */
+    }
+
+    li {
+        margin: 5px 0; /* Space between list items */
+        padding: 5px 0; /* Optional: Add some padding for better spacing */
+        border-bottom: 1px solid #ccc; /* Add a thin line below each item */
+    }
+
+    li:last-child {
+        border-bottom: none; /* Remove the border from the last item */
+    }
+
+    .task-form {
+        margin-top: 20px; /* Space above the form */
+        text-align: center; /* Center the form elements */
+    }
+
+    .task-button, .delete-all-button {
+        margin-top: 10px; /* Space above the button */
+        background-color: #007bff; /* Bootstrap primary color */
+        color: white; /* Text color */
+        border: none; /* No border */
+        padding: 10px 15px; /* Padding for button */
+        border-radius: 5px; /* Rounded corners */
+        cursor: pointer; /* Pointer cursor on hover */
+        width: 100%; /* Full width */
+        max-width: 200px; /* Optional: Set a max width */
+    }
+
+    .task-button:hover {
+        background-color: #0056b3; /* Darker shade on hover */
+    }
+
+    .delete-all-button {
+        background-color: #dc3545; /* Bootstrap danger color */
+    }
+
+    .delete-all-button:hover {
+        background-color: #811621; /* Darker shade on hover */
+    }
+
+    </style>
+</head>
+<body>
+    <h1>My To-Do List</h1>
+    
+    <div class="flash-message-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div>
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}" style="display: block;">{{ message }}</div>
+                    <div class="progress-bar"><div class="progress"></div></div> <!-- Progress bar -->
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>    
+    
+    <form action="/delete_all" method="post">
+        <button type="submit" class="delete-all-button">Delete All Tasks</button>
+    </form>
+
+    <div class="task-form">
+        <form action="/add" method="post">
+            <input type="text" name="task" placeholder="Enter a task" required autofocus>
+            <br>
+            <input type="date" name="due_date" placeholder="Due Date" required>
+            <button type="submit" class="task-button">Add Task</button>
+        </form>
+    </div>    
+    
+    <ul>
+        <li>Name - Due Date - Complete</li>
+        {% for task in tasks %}
+            <li>
+                <span>{{ task.name }}</span> - <span>{{ task.due_date }} -</span>
+                <form action="/complete/{{ loop.index0 }}" method="post" style="display:inline;">
+                    <input type="checkbox" name="complete" onchange="this.form.submit()" {% if task.complete %}checked{% endif %}>
+                </form>
+                <a href="/delete/{{ loop.index0 }}">❌</a>
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <div id='container'>
+        <!-- The success message is now handled by Flask's flash system -->
+    </div>
+</body
