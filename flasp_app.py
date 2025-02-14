@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, flash
 
-flask_app = Flask(__name__)
-flask_app.secret_key = "secret"
+app = Flask(__name__)
+app.secret_key = "secret"
 
 tasks = []
 
