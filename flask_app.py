@@ -67,7 +67,7 @@ def delete_all_tasks():
         print(f"Error when running delete_all_tasks: {e}")
     return redirect('/')
 
-@app.route("/api/tasks")
+@app.route("/api/tasks", methods=['GET'])
 def get_tasks():
     """Returns a json containing all the tasks"""
     try:
