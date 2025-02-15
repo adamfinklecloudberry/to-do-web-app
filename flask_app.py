@@ -78,4 +78,4 @@ def get_tasks():
         print(f"Error when returning all tasks: {e}")
 
 if __name__ == '__main__':
-    app.run(debug_mode)
+    app.run()
