@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 from flask import (
     Flask, 
     render_template, 
@@ -11,12 +9,7 @@ from flask import (
 
 app = Flask(__name__)
 
-load_dotenv()
-
-secret_key = os.getenv('SECRET_KEY')
-debug_mode = os.getenv('DEBUG')
-
-app.secret_key = secret_key
+app.secret_key = 'secret_key'
 
 tasks = []
 
