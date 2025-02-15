@@ -14,11 +14,12 @@ from flask import (
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
+db_path = os.path.join(os.path.dirname(__file__), 'tasks.db')
 
 
 def init_db():
     """Initialize the database"""
-    with sqlite3.connect('tasks.db') as conn:
+    with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS tasks (
@@ -31,14 +32,14 @@ def init_db():
         conn.commit()
 
 
-if not os.path.exists('tasks.db'):
+if not os.path.exists(db_path):
     init_db()
 
 
 @app.route('/')
 def home():
     """Returns the home HTML"""
-    with sqlite3.connect('tasks.db') as conn:
+    with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM tasks')
         tasks = cursor.fetchall()
@@ -52,7 +53,7 @@ def add_task():
         task = request.form.get('task')
         due_date = request.form.get('due_date')
         if task and due_date:
-            with sqlite3.connect('tasks.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute('INSERT INTO tasks (name, due_date) VALUES (?, ?)', (task, due_date))
                 conn.commit()
@@ -67,7 +68,7 @@ def add_task():
 def complete_task(task_id):
     """Marks a task as completed"""
     try:
-        with sqlite3.connect('tasks.db') as conn:
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute('UPDATE tasks SET complete = NOT complete WHERE id = ?', (task_id,))
             conn.commit()
@@ -82,7 +83,7 @@ def complete_task(task_id):
 def delete_task(task_id):
     """Deletes a task from the list"""
     try:
-        with sqlite3.connect('tasks.db') as conn:
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
             conn.commit()
@@ -97,7 +98,7 @@ def delete_task(task_id):
 def delete_all_tasks():
     """Deletes all tasks from the list"""
     try:
-        with sqlite3.connect('tasks.db') as conn:
+        with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             cursor.execute('DELETE FROM tasks')
             conn.commit()
@@ -112,7 +113,7 @@ def delete_all_tasks():
 def get_tasks():
     """Returns a json containing all the tasks"""
     try:
-        with sqlite3.connect('tasks.db') as conn:
+        with sqlite3.connect(db_path) as conn:
             cursor.execute('SELECT * FROM tasks')
             tasks = cursor.fetchall()
             conn.close()
