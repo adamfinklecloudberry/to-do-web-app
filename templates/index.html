@@ -4,136 +4,111 @@
     <title>To-Do List</title>
     <style>
         body {
-        display: flex;
-        flex-direction: column;
-        align-items: center; /* Center horizontally */
-        justify-content: flex-start; /* Align items to the top */
-        height: 100vh; /* Full viewport height */
-        margin: 0; /* Remove default margin */
-        font-family: Arial, sans-serif; /* Set a default font */
-    }
-
-    h1 {
-        margin-top: 10px; /* Reduced space above the title */
-    }
-
-    .flash-message-container {
-        height: 60px; /* Fixed height for the flash message */
-        overflow: hidden; /* Hide overflow if the message is too long */
-        position: relative; /* Position relative for absolute child */
-    }
-
-    .flash-message {
-        animation: fadeOut 5s forwards; /* Fade out over 5 seconds */
-        margin: 10px 0; /* Space around the message */
-        padding: 10px; /* Padding for better appearance */
-        border: 1px solid #ccc; /* Border for visibility */
-        border-radius: 5px; /* Rounded corners */
-        background-color: #f8f9fa; /* Light background color */
-        display: block; /* Ensure it is displayed */
-    }
-
-    @keyframes fadeOut {
-        0% {
-            opacity: 1; /* Fully visible */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center horizontally */
+            justify-content: flex-start; /* Align items to the top */
+            height: 100vh; /* Full viewport height */
+            margin: 0; /* Remove default margin */
+            font-family: Arial, sans-serif; /* Set a default font */
         }
-        99% {
-            opacity: 1; /* Still visible just before fading out */
+
+        h1 {
+            margin-top: 10px; /* Reduced space above the title */
         }
-        100% {
-            opacity: 0; /* Fully transparent */
-            display: none; /* Remove from layout */
+
+        .flash-message-container {
+            height: 60px; /* Fixed height for the flash message */
+            overflow: hidden; /* Hide overflow if the message is too long */
+            position: relative; /* Position relative for absolute child */
         }
-    }
 
-    .progress-bar {
-        width: 100%; /* Full width */
-        height: 5px; /* Height of the progress bar */
-        background-color: #e0e0e0; /* Light gray background */
-        margin-top: 5px; /* Space above the progress bar */
-        overflow: hidden; /* Hide overflow */
-    }
-
-    .progress {
-        height: 100%; /* Full height */
-        background-color: #007bff; /* Blue color for the progress */
-        width: 100%; /* Start full */
-        animation: decrease 5s linear forwards, fadeOutProgress 5s linear forwards; /* Animate over 5 seconds */
-    }
-
-    @keyframes decrease {
-        0% {
-            width: 100%; /* Start full */
+        .flash-message {
+            animation: fadeOut 5s forwards; /* Fade out over 5 seconds */
+            margin: 10px 0; /* Space around the message */
+            padding: 10px; /* Padding for better appearance */
+            border: 1px solid #ccc; /* Border for visibility */
+            border-radius: 5px; /* Rounded corners */
+            background-color: #f8f9fa; /* Light background color */
+            display: block; /* Ensure it is displayed */
         }
-        100% {
-            width: 0%; /* End at 0% */
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1; /* Fully visible */
+            }
+            99% {
+                opacity: 1; /* Still visible just before fading out */
+            }
+            100% {
+                opacity: 0; /* Fully transparent */
+                display: none; /* Remove from layout */
+            }
         }
-    }
 
-    @keyframes fadeOutProgress {
-        0% {
-            opacity: 1; /* Fully visible */
+        @keyframes fadeOutProgress {
+            0% {
+                opacity: 1; /* Fully visible */
+            }
+            99% {
+                opacity: 1; /* Still visible just before fading out */
+            }
+            100% {
+                opacity: 0; /* Fully transparent */
+                visibility: hidden; /* Hide the element */
+            }
         }
-        99% {
-            opacity: 1; /* Still visible just before fading out */
+
+        ul {
+            list-style-type: none; /* Remove default list styling */
+            padding: 0; /* Remove padding */
+            margin-top: 20px; /* Space above the list */
+            text-align: center; /* Center the list items */
+            max-height: 300px; /* Set a maximum height for the list */
+            overflow-y: auto; /* Enable vertical scrolling */
+            border: 1px solid #ccc; /* Optional: Add a border for visibility */
+            width: 100%; /* Full width */
+            max-width: 400px; /* Optional: Set a max width */
         }
-        100% {
-            opacity: 0; /* Fully transparent */
-            visibility: hidden; /* Hide the element */
+
+        li {
+            margin: 5px 0; /* Space between list items */
+            padding: 5px 0; /* Optional: Add some padding for better spacing */
+            border-bottom: 1px solid #ccc; /* Add a thin line below each item */
         }
-    }
 
-    ul {
-        list-style-type: none; /* Remove default list styling */
-        padding: 0; /* Remove padding */
-        margin-top: 20px; /* Space above the list */
-        text-align: center; /* Center the list items */
-        max-height: 300px; /* Set a maximum height for the list */
-        overflow-y: auto; /* Enable vertical scrolling */
-        border: 1px solid #ccc; /* Optional: Add a border for visibility */
-        width: 100%; /* Full width */
-        max-width: 400px; /* Optional: Set a max width */
-    }
+        li:last-child {
+            border-bottom: none; /* Remove the border from the last item */
+        }
 
-    li {
-        margin: 5px 0; /* Space between list items */
-        padding: 5px 0; /* Optional: Add some padding for better spacing */
-        border-bottom: 1px solid #ccc; /* Add a thin line below each item */
-    }
+        .task-form {
+            margin-top: 20px; /* Space above the form */
+            text-align: center; /* Center the form elements */
+        }
 
-    li:last-child {
-        border-bottom: none; /* Remove the border from the last item */
-    }
+        .task-button, .delete-all-button {
+            margin-top: 10px; /* Space above the button */
+            background-color: #007bff; /* Bootstrap primary color */
+            color: white; /* Text color */
+            border: none; /* No border */
+            padding: 10px 15px; /* Padding for button */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+            width: 100%; /* Full width */
+            max-width: 200px; /* Optional: Set a max width */
+        }
 
-    .task-form {
-        margin-top: 20px; /* Space above the form */
-        text-align: center; /* Center the form elements */
-    }
+        .task-button:hover {
+            background-color: #0056b3; /* Darker shade on hover */
+        }
 
-    .task-button, .delete-all-button {
-        margin-top: 10px; /* Space above the button */
-        background-color: #007bff; /* Bootstrap primary color */
-        color: white; /* Text color */
-        border: none; /* No border */
-        padding: 10px 15px; /* Padding for button */
-        border-radius: 5px; /* Rounded corners */
-        cursor: pointer; /* Pointer cursor on hover */
-        width: 100%; /* Full width */
-        max-width: 200px; /* Optional: Set a max width */
-    }
+        .delete-all-button {
+            background-color: #dc3545; /* Bootstrap danger color */
+        }
 
-    .task-button:hover {
-        background-color: #0056b3; /* Darker shade on hover */
-    }
-
-    .delete-all-button {
-        background-color: #dc3545; /* Bootstrap danger color */
-    }
-
-    .delete-all-button:hover {
-        background-color: #811621; /* Darker shade on hover */
-    }
-
+        .delete-all-button:hover {
+            background-color: #811621; /* Darker shade on hover */
+        }
     </style>
 </head>
 <body>
