@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from flask import (
     Flask, 
     render_template, 
@@ -8,7 +10,13 @@ from flask import (
 )
 
 app = Flask(__name__)
-app.secret_key = "secret"
+
+load_dotenv()
+
+secret_key = os.getenv('SECRET_KEY')
+debug_mode = os.getenv('DEBUG')
+
+app.secret_key = secret_key
 
 tasks = []
 
@@ -76,4 +84,4 @@ def get_tasks():
         print(f"Error when returning all tasks: {e}")
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug_mode)
