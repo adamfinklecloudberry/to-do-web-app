@@ -3,11 +3,10 @@ Tests for flask_app
 
 Contains unit tests for the bulk addition of tasks, ensuring that the
 application handles various scenarios correctly, such as successful
-additions, invalid data formats, and missing fields in task entries.
+additions, invalid data formats, and missing fields in task entries
 
-The tests utilize the pytest framework and create a temporary
-in-memory database for testing purposes, ensuring that the tests do not
-affect the production database.
+Creates a temporary in-memory database for testing purposes, ensuring 
+that the tests do not affect the production database
 """
 
 import os
@@ -23,10 +22,8 @@ def client():
     Creates a test client for the Flask app
 
     Sets up the Flask application in testing mode and initializes
-    a temporary database for the tests
-
-    The temporary database is created using a NamedTemporaryFile,
-    which is automatically deleted after the tests are run.
+    a temporary database for the tests using a NamedTemporaryFile,
+    which is automatically deleted after the tests are run
 
     Returns:
         Flask test client: A test client that can be used to simulate
@@ -34,7 +31,8 @@ def client():
     """
     app.config["TESTING"] = True
     with tempfile.NamedTemporaryFile(delete=True) as temp_db:
-        init_db(temp_db.name)
+        app.config['DATABASE'] = temp_db.name
+        init_db(app.config['DATABASE'])
         with app.test_client() as client:
             yield client
 
@@ -46,10 +44,10 @@ def test_bulk_add_tasks_success(client):
     Verifies that the application correctly handles a request to bulk
     add multiple tasks
 
-    Sends a valid list of task dictionaries to the '/bulk_add' endpoint
-    and checks that the response status code is 201 (Created) and that
-    the response message indicates success.  It also verifies that the
-    count of added tasks matches the number of tasks sent.
+    Sends a valid list of task dictionaries to the '/bulk_add' endpoint,
+    checks that the response status code is 201 (Created) and that
+    the response message indicates success, and verifies that the
+    count of added tasks matches the number of tasks sent
 
     Args:
         client: The Flask test client used to make requests to the

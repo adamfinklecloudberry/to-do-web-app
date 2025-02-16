@@ -3,9 +3,10 @@ A To-Do app
 
 Allows users to manage a list of tasks
 
-Users can add, complete, delete, and view tasks. Tasks are stored in a
-SQLite database, and the application provides both a web interface and
-a JSON API for task management.
+Users can add, complete, delete, and view tasks. 
+
+Stores tasks in a SQLite database and provides both a web interface and
+a JSON API for task management
 """
 
 import os
@@ -16,7 +17,8 @@ from flask import Flask, render_template, request, redirect, flash, jsonify
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
-db_path = os.path.join(os.path.dirname(__file__), "tasks.db")
+app.config['DATABASE'] = os.path.join(os.path.dirname(__file__), "tasks.db")
+db_path = app.config['DATABASE']
 
 
 def init_db(db_path: str):
@@ -54,7 +56,7 @@ def home() -> str:
     Renders the home page
 
     Retrieves all tasks from the database and renders the home HTML
-    template with the list of tasks.
+    template with the list of tasks
 
     Returns:
         str: The rendered HTML template for the home page."""
@@ -92,7 +94,7 @@ def add_task():
                 flash("Task added successfully", "success")
     except Exception as e:
         flash("Error in adding task", "error")
-        print(f"Error when running add_task: {e}")
+        print(f"Error when running add_task: {str(e)}")
     return redirect("/")
 
 
@@ -123,7 +125,7 @@ def complete_task(task_id: int):
             flash("Task completion status updated", "success")
     except Exception as e:
         flash("Error completing task", "error")
-        print(f"Error when running complete_task: {e}")
+        print(f"Error when running complete_task: {str(e)}")
     return redirect("/")
 
 
@@ -152,7 +154,7 @@ def delete_task(task_id: int):
             flash("Task deleted successfully", "danger")
     except Exception as e:
         flash("Error deleting task", "error")
-        print(f"Error when running delete_task: {e}")
+        print(f"Error when running delete_task: {str(e)}")
     return redirect("/")
 
 
@@ -181,7 +183,7 @@ def delete_all_tasks():
             flash("All tasks deleted successfully", "danger")
     except Exception as e:
         flash("Error deleting all tasks", "error")
-        print(f"Error when running delete_all_tasks: {e}")
+        print(f"Error when running delete_all_tasks: {str(e)}")
     return redirect("/")
 
 
@@ -190,11 +192,12 @@ def get_tasks():
     """
     Returns a json containing all the tasks
 
-    Queries the database for all tasks and returns them as a JSON response
+    Queries the database for all tasks and returns them as a JSON 
+    response
 
-    If the query is successful, it returns a list of tasks; if an
-    error occurs during the database operation, it prints the error
-    message to the console.
+    If the query is successful, returns a list of tasks; if an
+    error occurs during the database operation, prints the error
+    message to the console 
 
     Returns:
         Response: A JSON response containing a list of all tasks in the
@@ -203,12 +206,14 @@ def get_tasks():
     """
     try:
         with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
             cursor.execute("SELECT * FROM tasks")
             tasks = cursor.fetchall()
-            conn.close()
         return jsonify(tasks)
     except Exception as e:
-        print(f"Error when returning all tasks: {e}")
+        error_message = f"Error when returning all tasks: {str(e)}"
+        print(error_message)
+        return jsonify({"error": error_message})
 
 
 @app.route("/bulk_add", methods=["POST"])
@@ -281,8 +286,8 @@ def bulk_add_tasks():
         )
 
     except Exception as e:
-        print(f"Error when running bulk_add_tasks: {e}")
-        return jsonify({"error": "An error occurred while adding tasks."}), 500
+        print(f"Error when running bulk_add_tasks: {str(e)}")
+        return jsonify({"error": f"An error occurred while adding tasks."}), 500
 
 
 if __name__ == "__main__":
