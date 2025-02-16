@@ -18,10 +18,9 @@ from flask import Flask, render_template, request, redirect, flash, jsonify
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 app.config['DATABASE'] = os.path.join(os.path.dirname(__file__), "tasks.db")
-db_path = app.config['DATABASE']
 
 
-def init_db(db_path: str):
+def init_db():
     """
     Initializes the database
 
@@ -31,7 +30,7 @@ def init_db(db_path: str):
     Args:
         db_path (str): The path to the SQLite database file.
     """
-    with sqlite3.connect(db_path, timeout=5) as conn:
+    with sqlite3.connect(app.config['DATABASE'], timeout=5) as conn:
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -46,8 +45,8 @@ def init_db(db_path: str):
         conn.commit()
 
 
-if not os.path.exists(db_path):
-    init_db(db_path)
+if not os.path.exists(app.config['DATABASE']):
+    init_db()
 
 
 @app.route("/")
@@ -60,7 +59,7 @@ def home() -> str:
 
     Returns:
         str: The rendered HTML template for the home page."""
-    with sqlite3.connect(db_path) as conn:
+    with sqlite3.connect(app.config['DATABASE']) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM tasks")
         tasks = cursor.fetchall()
@@ -85,7 +84,7 @@ def add_task():
         task = request.form.get("task")
         due_date = request.form.get("due_date")
         if task and due_date:
-            with sqlite3.connect(db_path) as conn:
+            with sqlite3.connect(app.config['DATABASE']) as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     "INSERT INTO tasks (name, due_date) VALUES (?, ?)", (task, due_date)
@@ -116,7 +115,7 @@ def complete_task(task_id: int):
         Response: A redirect response to the home page.
     """
     try:
-        with sqlite3.connect(db_path) as conn:
+        with sqlite3.connect(app.config['DATABASE']) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE tasks SET complete = NOT complete WHERE id = ?", (task_id,)
@@ -147,7 +146,7 @@ def delete_task(task_id: int):
         Response: A redirect response to the home page.
     """
     try:
-        with sqlite3.connect(db_path) as conn:
+        with sqlite3.connect(app.config['DATABASE']) as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
             conn.commit()
@@ -176,7 +175,7 @@ def delete_all_tasks():
                   deletion operation
     """
     try:
-        with sqlite3.connect(db_path) as conn:
+        with sqlite3.connect(app.config['DATABASE']) as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM tasks")
             conn.commit()
@@ -205,7 +204,7 @@ def get_tasks():
                   status code with an error message.
     """
     try:
-        with sqlite3.connect(db_path) as conn:
+        with sqlite3.connect(app.config['DATABASE']) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM tasks")
             tasks = cursor.fetchall()
@@ -270,7 +269,7 @@ def bulk_add_tasks():
                     400,
                 )
 
-        with sqlite3.connect(db_path) as conn:
+        with sqlite3.connect(app.config['DATABASE']) as conn:
             cursor = conn.cursor()
             cursor.executemany(
                 "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",

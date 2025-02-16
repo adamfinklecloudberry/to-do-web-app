@@ -32,7 +32,7 @@ def client():
     app.config["TESTING"] = True
     with tempfile.NamedTemporaryFile(delete=True) as temp_db:
         app.config['DATABASE'] = temp_db.name
-        init_db(app.config['DATABASE'])
+        init_db()
         with app.test_client() as client:
             yield client
 
