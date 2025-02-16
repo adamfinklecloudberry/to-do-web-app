@@ -16,7 +16,7 @@ from flask import Flask, render_template, request, redirect, flash, jsonify
 
 
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(16)
+app.secret_key = secrets.token_hex(32)
 app.config['DATABASE'] = os.path.join(os.path.dirname(__file__), "tasks.db")
 
 
