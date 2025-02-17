@@ -271,8 +271,7 @@ def bulk_add_tasks():
                             "error": (
                                 "Each task must have a name and due_date.  "
                                 f"The name was {name if name else 'missing'} "
-                                f"and due_date was {
-                                    due_date if due_date else 'missing'}."
+                                f"and due_date was {due_date if due_date else 'missing'}."
                             )
                         }
                     ),
