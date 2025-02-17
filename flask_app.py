@@ -3,7 +3,7 @@ A To-Do app
 
 Allows users to manage a list of tasks
 
-Users can add, complete, delete, and view tasks. 
+Users can add, complete, delete, and view tasks.
 
 Stores tasks in a SQLite database and provides both a web interface and
 a JSON API for task management
@@ -12,12 +12,19 @@ a JSON API for task management
 import os
 import secrets
 import sqlite3
-from flask import Flask, render_template, request, redirect, flash, jsonify
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    flash,
+    jsonify,
+)
 
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
-app.config['DATABASE'] = os.path.join(os.path.dirname(__file__), "tasks.db")
+app.config["DATABASE"] = os.path.join(os.path.dirname(__file__), "tasks.db")
 
 
 def init_db():
@@ -30,7 +37,7 @@ def init_db():
     Args:
         db_path (str): The path to the SQLite database file.
     """
-    with sqlite3.connect(app.config['DATABASE'], timeout=5) as conn:
+    with sqlite3.connect(app.config["DATABASE"], timeout=5) as conn:
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -45,7 +52,7 @@ def init_db():
         conn.commit()
 
 
-if not os.path.exists(app.config['DATABASE']):
+if not os.path.exists(app.config["DATABASE"]):
     init_db()
 
 
@@ -59,7 +66,7 @@ def home() -> str:
 
     Returns:
         str: The rendered HTML template for the home page."""
-    with sqlite3.connect(app.config['DATABASE']) as conn:
+    with sqlite3.connect(app.config["DATABASE"]) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM tasks")
         tasks = cursor.fetchall()
@@ -84,10 +91,11 @@ def add_task():
         task = request.form.get("task")
         due_date = request.form.get("due_date")
         if task and due_date:
-            with sqlite3.connect(app.config['DATABASE']) as conn:
+            with sqlite3.connect(app.config["DATABASE"]) as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO tasks (name, due_date) VALUES (?, ?)", (task, due_date)
+                    "INSERT INTO tasks (name, due_date) VALUES (?, ?)",
+                    (task, due_date),
                 )
                 conn.commit()
                 flash("Task added successfully", "success")
@@ -115,10 +123,11 @@ def complete_task(task_id: int):
         Response: A redirect response to the home page.
     """
     try:
-        with sqlite3.connect(app.config['DATABASE']) as conn:
+        with sqlite3.connect(app.config["DATABASE"]) as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "UPDATE tasks SET complete = NOT complete WHERE id = ?", (task_id,)
+                "UPDATE tasks SET complete = NOT complete WHERE id = ?",
+                (task_id,),
             )
             conn.commit()
             flash("Task completion status updated", "success")
@@ -146,7 +155,7 @@ def delete_task(task_id: int):
         Response: A redirect response to the home page.
     """
     try:
-        with sqlite3.connect(app.config['DATABASE']) as conn:
+        with sqlite3.connect(app.config["DATABASE"]) as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
             conn.commit()
@@ -175,7 +184,7 @@ def delete_all_tasks():
                   deletion operation
     """
     try:
-        with sqlite3.connect(app.config['DATABASE']) as conn:
+        with sqlite3.connect(app.config["DATABASE"]) as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM tasks")
             conn.commit()
@@ -191,12 +200,12 @@ def get_tasks():
     """
     Returns a json containing all the tasks
 
-    Queries the database for all tasks and returns them as a JSON 
+    Queries the database for all tasks and returns them as a JSON
     response
 
     If the query is successful, returns a list of tasks; if an
     error occurs during the database operation, prints the error
-    message to the console 
+    message to the console
 
     Returns:
         Response: A JSON response containing a list of all tasks in the
@@ -204,7 +213,7 @@ def get_tasks():
                   status code with an error message.
     """
     try:
-        with sqlite3.connect(app.config['DATABASE']) as conn:
+        with sqlite3.connect(app.config["DATABASE"]) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM tasks")
             tasks = cursor.fetchall()
@@ -262,14 +271,15 @@ def bulk_add_tasks():
                             "error": (
                                 "Each task must have a name and due_date.  "
                                 f"The name was {name if name else 'missing'} "
-                                f"and due_date was {due_date if due_date else 'missing'}."
+                                f"and due_date was {
+                                    due_date if due_date else 'missing'}."
                             )
                         }
                     ),
                     400,
                 )
 
-        with sqlite3.connect(app.config['DATABASE']) as conn:
+        with sqlite3.connect(app.config["DATABASE"]) as conn:
             cursor = conn.cursor()
             cursor.executemany(
                 "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
@@ -279,14 +289,20 @@ def bulk_add_tasks():
 
         return (
             jsonify(
-                {"message": "Tasks added successfully", "count": len(tasks_to_insert)}
+                {
+                    "message": "Tasks added successfully",
+                    "count": len(tasks_to_insert),
+                }
             ),
             201,
         )
 
     except Exception as e:
         print(f"Error when running bulk_add_tasks: {str(e)}")
-        return jsonify({"error": f"An error occurred while adding tasks."}), 500
+        return (
+            jsonify({"error": f"An error occurred while adding tasks."}),
+            500,
+        )
 
 
 if __name__ == "__main__":
