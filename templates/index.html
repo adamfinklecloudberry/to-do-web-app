@@ -153,6 +153,7 @@
         <li>Name - Due Date - Complete</li>
         {% for task in tasks %}
             <li>
+                <a href="/edit/{{ task[0] }}">✏️</a>
                 <span>{{ task[1] }}</span> - <span>{{ task[2] }} -</span>
                 <form action="/complete/{{ task[0] }}" method="post" style="display:inline;">
                     <input type="checkbox" name="complete" onchange="this.form.submit()" {% if task[3] %}checked{% endif %}>

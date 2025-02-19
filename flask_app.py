@@ -12,14 +12,7 @@ a JSON API for task management
 import os
 import secrets
 import sqlite3
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    flash,
-    jsonify,
-)
+from flask import Flask, render_template, request, redirect, flash, jsonify, url_for
 
 
 app = Flask(__name__)
@@ -103,6 +96,24 @@ def add_task():
         flash("Error in adding task", "error")
         print(f"Error when running add_task: {str(e)}")
     return redirect("/")
+
+
+@app.route("/edit/<int:task_id>", methods=["GET", "POST"])
+def edit(task_id: int):
+    with sqlite3.connect(app.config["DATABASE"]) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+        task = cursor.fetchone()
+
+        if request.method == "POST":
+            new_task = request.form.get("task")
+            cursor.execute(
+                "UPDATE tasks SET name = ? WHERE id = ?", (new_task, task_id)
+            )
+            conn.commit()
+            return redirect(url_for("home"))
+
+        return render_template("edit.html", task_id=task_id, task=task)
 
 
 @app.route("/complete/<int:task_id>", methods=["POST"])

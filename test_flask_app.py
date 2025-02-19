@@ -13,7 +13,7 @@ import os
 import tempfile
 import json
 import pytest
-from flask import Flask, flash, get_flashed_messages
+from flask import Flask, flash, get_flashed_messages, url_for
 import sqlite3
 from flask_app import app, init_db
 
@@ -103,6 +103,59 @@ def test_add_task_database_error(client):
         assert "Error in adding task" in [
             m[1] for m in get_flashed_messages(with_categories=True)
         ]
+
+
+def test_edit_get(client):
+    """
+    Test the GET request to the edit route
+
+    Verifies that the GET request to the `/edit/<int:task_id>` route
+    returns a successful response with the correct HTML content
+
+    Checks that the response status code is 200 (OK) and that the
+    response data contains the expected text 'Edit the Name of This
+    Task'.
+    """
+    response = client.get("/edit/1")
+    assert response.status_code == 200
+    print(response.data)
+    assert b"Edit the Name of This Task" in response.data
+
+
+def test_edit_task_success(client):
+    """
+    Check whether editing a task works
+
+    Verifies that the POST request to the `/edit/<int:task_id>` route
+    successfully updates a task in the database
+
+    Performs the following steps:
+    1. Inserts a new task into the database with specific values
+    2. Sends a POST request to the edit route with updated task data
+    3. Checks that the response status code is 302 (Redirect) and that the
+       redirect location is correct
+    4. Verifies that the task has been updated in the database by
+       checking the `name` field of the task with `id = 1`
+    """
+    with app.app_context():
+        with sqlite3.connect(app.config["DATABASE"]) as conn:
+            name, due_date, complete = "walk", "2024-04-19", False
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
+                (name, due_date, complete),
+            )
+            conn.commit()
+    response = client.post("/edit/1", data={"task": "Updated Task"})
+    assert response.status_code == 302  # Redirect to home
+    assert response.location == url_for("home", _external=False)
+
+    # Verify the task has been updated in the database
+    with sqlite3.connect(app.config["DATABASE"]) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM tasks WHERE id = 1")
+        updated_task = cursor.fetchone()
+        assert updated_task[0] == "Updated Task"
 
 
 def test_bulk_add_tasks_success(client):
