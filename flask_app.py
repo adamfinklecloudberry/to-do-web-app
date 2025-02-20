@@ -56,6 +56,7 @@ class Task(db.Model):
 
 
 class User(db.Model, UserMixin):
+    __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
@@ -443,4 +444,5 @@ def bulk_add_tasks():
 
 
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True)
