@@ -10,7 +10,7 @@
     <div class="container">
         <h2 class="mt-5">Dashboard</h2>
         <p>Welcome, {{ current_user.email }}!</p>
-        <a href="{{ url_for('home') }}" class="btn">To Do List</a>
+        <a href="{{ url_for('home') }}" class="btn btn-primary">To Do List</a>
         <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
     </div>
 </body>
