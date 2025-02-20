@@ -21,7 +21,7 @@ app.secret_key = secrets.token_hex(32)
 
 # Configure the SQLAlchemy Database
 app.config["SQLALCHEMY_DATABASE_URI"] = (
-    f"sqlite:///{os.path.join(os.path.dirname(__file__), "database.db")}"
+    f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database.db')}"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
