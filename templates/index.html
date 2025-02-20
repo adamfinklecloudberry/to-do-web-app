@@ -95,7 +95,7 @@
             margin-bottom: 10px; /* Add some space below each input */
         }
 
-        .task-button, .delete-all-button {
+        .task-button, .delete-all-button, .show-only-incomplete-button {
             margin-top: 10px; /* Space above the button */
             background-color: #007bff; /* Bootstrap primary color */
             color: white; /* Text color */
@@ -105,6 +105,10 @@
             cursor: pointer; /* Pointer cursor on hover */
             width: 100%; /* Full width */
             max-width: 200px; /* Optional: Set a max width */
+        }
+
+        .show-only-incomplete-button {
+            background-color: #006400; /* Light green */
         }
 
         .task-button:hover {
@@ -147,7 +151,18 @@
             <input type="date" name="due_date" placeholder="Due Date" required>
             <button type="submit" class="task-button">Add Task</button>
         </form>
-    </div>    
+    </div>
+
+    <form action="/" method="get">
+        <input type="hidden" name="incomplete" value="{% if request.args.get('incomplete', 'false') == 'true' %}false{% else %}true{% endif %}">
+        <button type="submit" style="background-color: darkgreen; color: white; font-size: 12px; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            {% if request.args.get('incomplete', 'false') == 'true' %}
+                Show All Tasks
+            {% else %}
+                Show Only Incomplete Tasks
+            {% endif %}
+        </button>
+    </form>
     
     <ul>
         <li>Name - Due Date - Complete</li>
@@ -161,7 +176,7 @@
                 <a href="/delete/{{ task[0] }}">❌</a>
             </li>
         {% endfor %}
-    </ul>    
+    </ul>   
     
     <div id='container'>
         <!-- The success message is now handled by Flask's flash system -->

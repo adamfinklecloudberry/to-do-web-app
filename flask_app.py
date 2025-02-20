@@ -57,13 +57,24 @@ def home() -> str:
     Retrieves all tasks from the database and renders the home HTML
     template with the list of tasks
 
+    Excludes complete tasks if the request includes an argument
+    telling it to
+
     Returns:
         str: The rendered HTML template for the home page."""
-    with sqlite3.connect(app.config["DATABASE"]) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM tasks")
-        tasks = cursor.fetchall()
-    return render_template("index.html", tasks=tasks)
+    try:
+        with sqlite3.connect(app.config["DATABASE"]) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM tasks")
+            tasks = cursor.fetchall()
+    except sqlite3.Error as e:
+        return f"Database error: {e}", 500
+
+    show_incomplete = request.args.get("incomplete", "false").lower() == "true"
+    filtered_tasks = (
+        [task for task in tasks if not task[3]] if show_incomplete else tasks
+    )
+    return render_template("index.html", tasks=filtered_tasks)
 
 
 @app.route("/add", methods=["POST"])
