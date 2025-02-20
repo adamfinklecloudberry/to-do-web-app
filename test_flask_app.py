@@ -15,8 +15,9 @@ import json
 import pytest
 from flask import Flask, flash, get_flashed_messages, url_for
 import sqlite3
-from flask_app import app, db, init_db, Task
+from flask_app import app, db, init_db, Task, User
 from sqlalchemy import text
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 @pytest.fixture
@@ -64,15 +65,26 @@ def test_home_exclude_complete_tasks(client):
         db.session.add(Task(name="Task 2", due_date="2023-10-02", complete=True))
         db.session.add(Task(name="Task 3", due_date="2023-10-03"))
 
+        # Create a test user (assuming you have a User model)
+        test_user = User(
+            email="test@user.com", password=generate_password_hash("password")
+        )
+        db.session.add(test_user)
         db.session.commit()
+
+    # Log in the test user
+    response = client.post(
+        "/login", data={"email": "test@user.com", "password": "password"}
+    )
+
+    # Check if login was successful
+    assert response.status_code == 302  # Assuming a redirect after login
 
     # Test: Request the home route with the 'incomplete' parameter set to 'true'
     response = client.get("/?incomplete=true")
 
     # Assert: Check that the response status code is 200 (OK)
     assert response.status_code == 200
-
-    # Debug: Print the response data to inspect the HTML output
 
     # Assert: Check that the response contains only incomplete tasks
     assert b"Task 1" in response.data
@@ -92,10 +104,26 @@ def test_home_include_all_tasks(client):
     """
     # Setup: Add test data to the database
     with app.app_context():
+        # Create a test user (assuming you have a User model)
+        test_user = User(
+            email="test@user.com", password=generate_password_hash("password")
+        )
+        db.session.add(test_user)
+        db.session.commit()
+
+        # Add test tasks
         db.session.add(Task(name="Task 1", due_date="2023-10-01"))
-        db.session.add(Task(name="Task 2", due_date="2023-10-02"))
+        db.session.add(Task(name="Task 2", due_date="2023-10-02", complete=True))
         db.session.add(Task(name="Task 3", due_date="2023-10-03"))
         db.session.commit()
+
+    # Log in the test user
+    response = client.post(
+        "/login", data={"email": "test@user.com", "password": "password"}
+    )
+
+    # Check if login was successful
+    assert response.status_code == 302  # Assuming a redirect after login
 
     # Test: Request the home route without the 'incomplete' parameter
     response = client.get("/")
@@ -105,8 +133,7 @@ def test_home_include_all_tasks(client):
 
     # Assert: Check that the response contains all tasks
     assert b"Task 1" in response.data
-    # This task is complete and should be included
-    assert b"Task 2" in response.data
+    assert b"Task 2" in response.data  # This task is complete and should be included
     assert b"Task 3" in response.data
 
 

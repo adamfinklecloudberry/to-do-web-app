@@ -11,37 +11,30 @@ a JSON API for task management
 
 import os
 import secrets
-from flask import (
-    Flask, 
-    render_template, 
-    request, 
-    redirect, 
-    flash, 
-    jsonify, 
-    url_for
-)
+from flask import Flask, render_template, request, redirect, flash, jsonify, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
     LoginManager,
-    login_user, 
-    logout_user, 
-    login_required, 
-    current_user, 
-    UserMixin
+    login_user,
+    logout_user,
+    login_required,
+    current_user,
+    UserMixin,
 )
-from werkzeug.security import (
-    generate_password_hash, 
-    check_password_hash
-)
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 
 # Set the database file based on the environment
 if app.config["TESTING"] == True:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(os.path.dirname(__file__), 'test.db')
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
+        os.path.dirname(__file__), "test.db"
+    )
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(os.path.dirname(__file__), 'database.db')
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
+        os.path.dirname(__file__), "database.db"
+    )
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -50,7 +43,7 @@ db = SQLAlchemy(app)
 
 # Initialize the login manager
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager.login_view = "login"
 
 
 class Task(db.Model):
@@ -68,7 +61,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150), nullable=False)
 
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f"<User {self.email}>"
 
 
 def init_db():
@@ -99,6 +92,7 @@ else:
 
 
 @app.route("/")
+@login_required  # Ensure the user is logged in to access this route
 def home() -> str:
     """
     Renders the home page
@@ -110,7 +104,8 @@ def home() -> str:
     telling it to
 
     Returns:
-        str: The rendered HTML template for the home page."""
+        str: The rendered HTML template for the home page.
+    """
     try:
         tasks = Task.query.all()  # Get all tasks
     except Exception as e:
@@ -125,46 +120,48 @@ def home() -> str:
     return render_template("index.html", tasks=filtered_tasks)
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
+    if request.method == "POST":
+        email = request.form["email"]
+        password = generate_password_hash(
+            request.form["password"], method="pbkdf2:sha256"
+        )
         new_user = User(email=email, password=password)
         db.session.add(new_user)
         db.session.commit()
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
-    return render_template('register.html')
+        flash("Registration successful! Please log in.", "success")
+        return redirect(url_for("login"))
+    return render_template("register.html")
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
             user.logged_in = True
             db.session.commit()
-            return redirect(url_for('dashboard'))
+            return redirect(url_for("dashboard"))
         else:
-            flash('Login failed. Check your email and password.', 'danger')
-    return render_template('login.html')
+            flash("Login failed. Check your email and password.", "danger")
+    return render_template("login.html")
 
 
-@app.route('/dashboard')
+@app.route("/dashboard")
 @login_required
 def dashboard():
     return render_template("dashboard.html")
 
 
-@app.route('/logout')
+@app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for("login"))
 
 
 @login_manager.user_loader
@@ -172,6 +169,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+@login_required
 @app.route("/add", methods=["POST"])
 def add_task():
     """
@@ -192,13 +190,6 @@ def add_task():
         try:
             task = Task(name=name, due_date=due_date, complete=False)
             db.session.add(task)
-
-            # with sqlite3.connect(app.config["DATABASE"]) as conn:
-            #     cursor = conn.cursor()
-            #     cursor.execute(
-            #         "INSERT INTO tasks (name, due_date) VALUES (?, ?)",
-            #         (task, due_date),
-            #     )
             db.session.commit()
             flash("Task added successfully", "success")
         except Exception as e:
@@ -207,6 +198,7 @@ def add_task():
     return redirect("/")
 
 
+@login_required
 @app.route("/edit/<int:task_id>", methods=["GET", "POST"])
 def edit(task_id: int):
     task = Task.query.get(task_id)
@@ -224,6 +216,7 @@ def edit(task_id: int):
     return render_template("edit.html", task_id=task_id, task=task)
 
 
+@login_required
 @app.route("/complete/<int:task_id>", methods=["POST"])
 def complete_task(task_id: int):
     """
@@ -260,6 +253,7 @@ def complete_task(task_id: int):
     return redirect("/")
 
 
+@login_required
 @app.route("/delete/<int:task_id>")
 def delete_task(task_id: int):
     """
@@ -297,6 +291,7 @@ def delete_task(task_id: int):
     return redirect("/")
 
 
+@login_required
 @app.route("/delete_all", methods=["POST"])
 def delete_all_tasks():
     """
@@ -327,6 +322,7 @@ def delete_all_tasks():
     return redirect("/")
 
 
+@login_required
 @app.route("/api/tasks", methods=["GET"])
 def get_tasks():
     """
@@ -366,6 +362,7 @@ def get_tasks():
         return jsonify({"error": error_message}), 500  # Return a 500 error status
 
 
+@login_required
 @app.route("/bulk_add", methods=["POST"])
 def bulk_add_tasks():
     """
