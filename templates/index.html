@@ -168,15 +168,15 @@
         <li>Name - Due Date - Complete</li>
         {% for task in tasks %}
             <li>
-                <a href="/edit/{{ task[0] }}">✏️</a>
-                <span>{{ task[1] }}</span> - <span>{{ task[2] }} -</span>
-                <form action="/complete/{{ task[0] }}" method="post" style="display:inline;">
-                    <input type="checkbox" name="complete" onchange="this.form.submit()" {% if task[3] %}checked{% endif %}>
+                <a href="/edit/{{ task.id }}">✏️</a>
+                <span>{{ task.name }}</span> - <span>{{ task.due_date }} -</span>
+                <form action="/complete/{{ task.id }}" method="post" style="display:inline;">
+                    <input type="checkbox" name="complete" onchange="this.form.submit()" {% if task.complete %}checked{% endif %}>
                 </form>
-                <a href="/delete/{{ task[0] }}">❌</a>
+                <a href="/delete/{{ task.id }}">❌</a>
             </li>
         {% endfor %}
-    </ul>   
+    </ul>
     
     <div id='container'>
         <!-- The success message is now handled by Flask's flash system -->

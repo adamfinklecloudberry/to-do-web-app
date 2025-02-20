@@ -15,7 +15,8 @@ import json
 import pytest
 from flask import Flask, flash, get_flashed_messages, url_for
 import sqlite3
-from flask_app import app, init_db
+from flask_app import app, db, init_db, Task
+from sqlalchemy import text
 
 
 @pytest.fixture
@@ -24,19 +25,23 @@ def client():
     Creates a test client for the Flask app
 
     Sets up the Flask application in testing mode and initializes
-    a temporary database for the tests using a NamedTemporaryFile,
-    which is automatically deleted after the tests are run
+    a temporary in-memory database for the tests
 
     Returns:
         Flask test client: A test client that can be used to simulate
         requests to the application during testing.
     """
     app.config["TESTING"] = True
-    with tempfile.NamedTemporaryFile(delete=True) as temp_db:
-        app.config["DATABASE"] = temp_db.name
-        init_db()
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    with app.app_context():
+        db.create_all()
         with app.test_client() as client:
             yield client
+
+    with app.app_context():
+        db.drop_all()
 
 
 def test_home_exclude_complete_tasks(client):
@@ -49,34 +54,28 @@ def test_home_exclude_complete_tasks(client):
     parameter, and asserts that only incomplete tasks are present in
     the response data
     """
-    # Setup: Add test data to the database
-    with sqlite3.connect(app.config["DATABASE"]) as conn:
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM tasks")  # Clear existing tasks
-        cursor.execute(
-            "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
-            ("Task 1", "2023-10-01", 0),
-        )  # Incomplete
-        cursor.execute(
-            "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
-            ("Task 2", "2023-10-02", 1),
-        )  # Complete
-        cursor.execute(
-            "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
-            ("Task 3", "2023-10-03", 0),
-        )  # Incomplete
-        conn.commit()
+    # Add test data to the database with SQLAlchemy
+    with app.app_context():
+        # Delete all existing tasks
+        db.session.query(Task).delete()
 
-    # Test: Request the home route with the 'incomplete'
-    # parameter set to 'true'
+        # Add test tasks
+        db.session.add(Task(name="Task 1", due_date="2023-10-01"))
+        db.session.add(Task(name="Task 2", due_date="2023-10-02", complete=True))
+        db.session.add(Task(name="Task 3", due_date="2023-10-03"))
+
+        db.session.commit()
+
+    # Test: Request the home route with the 'incomplete' parameter set to 'true'
     response = client.get("/?incomplete=true")
 
     # Assert: Check that the response status code is 200 (OK)
     assert response.status_code == 200
 
+    # Debug: Print the response data to inspect the HTML output
+
     # Assert: Check that the response contains only incomplete tasks
     assert b"Task 1" in response.data
-    # This task is complete and should be excluded
     assert b"Task 2" not in response.data
     assert b"Task 3" in response.data
 
@@ -92,22 +91,11 @@ def test_home_include_all_tasks(client):
     the response data
     """
     # Setup: Add test data to the database
-    with sqlite3.connect(app.config["DATABASE"]) as conn:
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM tasks")  # Clear existing tasks
-        cursor.execute(
-            "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
-            ("Task 1", "2023-10-01", 0),
-        )  # Incomplete
-        cursor.execute(
-            "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
-            ("Task 2", "2023-10-02", 1),
-        )  # Complete
-        cursor.execute(
-            "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
-            ("Task 3", "2023-10-03", 0),
-        )  # Incomplete
-        conn.commit()
+    with app.app_context():
+        db.session.add(Task(name="Task 1", due_date="2023-10-01"))
+        db.session.add(Task(name="Task 2", due_date="2023-10-02"))
+        db.session.add(Task(name="Task 3", due_date="2023-10-03"))
+        db.session.commit()
 
     # Test: Request the home route without the 'incomplete' parameter
     response = client.get("/")
@@ -176,9 +164,9 @@ def test_add_task_database_error(client):
     gracefully without crashing
     """
     with app.app_context():
-        with sqlite3.connect(app.config["DATABASE"]) as conn:
-            cursor = conn.cursor()
-            cursor.execute("DROP TABLE tasks")  # Drop the table to simulate an error
+        db.session.execute(text("DROP TABLE IF EXISTS tasks"))
+        db.session
+        db.session.commit()
 
     response = client.post("/add", data={"task": "Test Task", "due_date": "2023-12-31"})
     assert response.status_code == 302  # redirect
@@ -199,6 +187,9 @@ def test_edit_get(client):
     response data contains the expected text 'Edit the Name of This
     Task'.
     """
+    with app.app_context():
+        db.session.add(Task(name="Task 1", due_date="2023-10-01"))
+        db.session.commit()
     response = client.get("/edit/1")
     assert response.status_code == 200
     assert b"Edit the Name of This Task" in response.data
@@ -220,24 +211,22 @@ def test_edit_task_success(client):
        checking the `name` field of the task with `id = 1`
     """
     with app.app_context():
-        with sqlite3.connect(app.config["DATABASE"]) as conn:
-            name, due_date, complete = "walk", "2024-04-19", False
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
-                (name, due_date, complete),
-            )
-            conn.commit()
+        # Step 1: Insert a new task into the database
+        name, due_date, complete = "walk", "2024-04-19", False
+        new_task = Task(name=name, due_date=due_date, complete=complete)
+        db.session.add(new_task)
+        db.session.commit()
+
+    # Step 2: Send a POST request to the edit route with updated task data
     response = client.post("/edit/1", data={"task": "Updated Task"})
+
+    # Step 3: Check that the response status code is 302 (Redirect)
     assert response.status_code == 302  # Redirect to home
     assert response.location == url_for("home", _external=False)
 
-    # Verify the task has been updated in the database
-    with sqlite3.connect(app.config["DATABASE"]) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM tasks WHERE id = 1")
-        updated_task = cursor.fetchone()
-        assert updated_task[0] == "Updated Task"
+    # Step 4: Verify the task has been updated in the database
+    updated_task = Task.query.get(1)  # Fetch the task with id = 1
+    assert updated_task.name == "Updated Task"
 
 
 def test_bulk_add_tasks_success(client):
@@ -272,13 +261,12 @@ def test_bulk_add_tasks_success(client):
 
 def insert_task(name: str, due_date: str, complete: bool) -> None:
     """Helper function to insert data for tests"""
-    with sqlite3.connect(app.config["DATABASE"]) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO tasks (name, due_date, complete) VALUES (?, ?, ?)",
-            (name, due_date, complete),
-        )
-        conn.commit()
+    # Create a new Task instance
+    new_task = Task(name=name, due_date=due_date, complete=complete)
+
+    # Add the new task to the session and commit
+    db.session.add(new_task)
+    db.session.commit()
 
 
 def get_task(task_id: int) -> None:
@@ -288,13 +276,7 @@ def get_task(task_id: int) -> None:
     Returns:
         The task in the database with this id
     """
-    with sqlite3.connect(app.config["DATABASE"]) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM tasks WHERE id = ?",
-            (task_id,),
-        )
-        return cursor.fetchone()
+    return Task.query.get(task_id)
 
 
 def test_complete_task(client):
@@ -311,10 +293,12 @@ def test_complete_task(client):
     response = client.post("/complete/1")
     assert response.status_code == 302  # redirect
 
-    task_data = get_task(1)
+    task = get_task(1)
     task_id = 1
     complete = 1
-    assert task_data == (task_id, name, due_date, complete)
+    assert task.name == "Test task"
+    assert task.due_date == "2023-01-01"
+    assert task.complete == True
 
 
 def test_delete_task(client):
@@ -363,8 +347,8 @@ def test_get_tasks(client):
     response = client.get("/api/tasks")
     assert response.status_code == 200
     assert response.json == [
-        [1, name, due_date, complete],
-        [2, name, due_date, complete],
+        {"id": 1, "name": name, "due_date": due_date, "complete": complete},
+        {"id": 2, "name": name, "due_date": due_date, "complete": complete},
     ]
 
 
