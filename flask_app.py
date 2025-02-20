@@ -11,29 +11,46 @@ a JSON API for task management
 
 import os
 import secrets
-import sqlite3
-from flask import Flask, render_template, request, redirect, flash, jsonify, url_for
+from flask import (
+    Flask, 
+    render_template, 
+    request, 
+    redirect, 
+    flash, 
+    jsonify, 
+    url_for
+)
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_login import (
+    LoginManager,
+    login_user, 
+    logout_user, 
+    login_required, 
+    current_user, 
+    UserMixin
+)
+from werkzeug.security import (
+    generate_password_hash, 
+    check_password_hash
+)
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 
-# Configure the SQLAlchemy Database
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database.db')}"
-)
+# Set the database file based on the environment
+if app.config["TESTING"] == True:
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(os.path.dirname(__file__), 'test.db')
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(os.path.dirname(__file__), 'database.db')
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initialize the SQLAlchemy object
-# Configuration based on the environment
-if os.environ.get("FLASK_ENV") == "production":
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///production.db"
-else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "sqlite:///test.db"  # or an in-memory database
-    )
 db = SQLAlchemy(app)
+
+# Initialize the login manager
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
 
 class Task(db.Model):
@@ -45,22 +62,40 @@ class Task(db.Model):
     complete = db.Column(db.Boolean, default=False, nullable=False)
 
 
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+
+    def __repr__(self):
+        return f'<User {self.email}>'
+
+
 def init_db():
     """
     Initializes the database
 
     Creates the SQLAlchemy database and the tasks table if it does not
     already exist
-
-    Args:
-        db_path (str): The path to the SQLite database file.
     """
     with app.app_context():
         db.create_all()
+        print("Database initialized and tables created.")
 
 
-if not os.path.exists(app.config["SQLALCHEMY_DATABASE_URI"]):
+# Extract the database file path from the SQLALCHEMY_DATABASE_URI
+db_uri = app.config["SQLALCHEMY_DATABASE_URI"]
+db_path = db_uri.split("///")[-1]  # Get the path after 'sqlite:///'
+
+# Debugging output
+print(f"Database path: {db_path}")
+
+# Check if the database file exists
+if not os.path.exists(db_path):
+    print("Database file does not exist. Initializing database...")
     init_db()
+else:
+    print("Database file already exists.")
 
 
 @app.route("/")
@@ -88,6 +123,53 @@ def home() -> str:
     )
 
     return render_template("index.html", tasks=filtered_tasks)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
+        new_user = User(email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('Registration successful! Please log in.', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            user.logged_in = True
+            db.session.commit()
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Login failed. Check your email and password.', 'danger')
+    return render_template('login.html')
+
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template("dashboard.html")
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 @app.route("/add", methods=["POST"])
