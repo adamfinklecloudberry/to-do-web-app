@@ -1,6 +1,6 @@
 """Tests for adding tasks"""
 
-from flask import get_flashed_messages
+from flask import get_flashed_messages, url_for
 from sqlalchemy import text
 from config import db
 from flask_app import app
@@ -29,7 +29,9 @@ def test_add_task_success(client):
     The task being added to the database and the user receiving a
     success message
     """
-    response = client.post("/add", data={"task": "Test Task", "due_date": "2023-12-31"})
+    response = client.post(
+        url_for("add_task"), data={"task": "Test Task", "due_date": "2023-12-31"}
+    )
     assert response.status_code == 302  # Check for redirect
     with app.app_context():
         assert "Task added successfully" in [
@@ -64,7 +66,9 @@ def test_add_task_database_error(client):
         db.session
         db.session.commit()
 
-    response = client.post("/add", data={"task": "Test Task", "due_date": "2023-12-31"})
+    response = client.post(
+        url_for("add_task"), data={"task": "Test Task", "due_date": "2023-12-31"}
+    )
     assert response.status_code == 302  # redirect
     with app.app_context():
         assert "Error in adding task" in [

@@ -2,7 +2,7 @@
 
 from config import db
 from models.task import Task
-from tests.helper import insert_task
+from tests.helpers import insert_task
 
 
 def test_delete_all_tasks(client):
