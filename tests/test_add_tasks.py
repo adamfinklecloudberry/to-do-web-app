@@ -1,4 +1,5 @@
 """Tests for adding tasks"""
+
 from flask import get_flashed_messages
 from sqlalchemy import text
 from config import db

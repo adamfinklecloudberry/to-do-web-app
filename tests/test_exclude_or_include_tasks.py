@@ -97,5 +97,5 @@ def test_home_include_all_tasks(client):
     # Assert: Check that the response contains all tasks
     assert b"Task 1" in response.data
     # This task is complete and should be included
-    assert b"Task 2" in response.data  
+    assert b"Task 2" in response.data
     assert b"Task 3" in response.data

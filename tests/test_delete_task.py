@@ -4,6 +4,7 @@ from config import db
 from flask_app import Task
 from tests.helper import insert_task
 
+
 def test_delete_task(client):
     """
     Tests whether a task can be deleted
