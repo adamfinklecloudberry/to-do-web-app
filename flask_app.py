@@ -32,7 +32,7 @@ init_app(app)
 
 
 @app.route("/")
-@login_required  # Ensure the user is logged in to access this route
+@login_required
 def home() -> str:
     """
     Renders the home page
@@ -47,7 +47,7 @@ def home() -> str:
         str: The rendered HTML template for the home page.
     """
     try:
-        tasks = Task.query.all()  # Get all tasks
+        tasks = db.session.scalars(select(Task))
     except Exception as e:
         print(f"Error querying tasks from table {Task.__tablename__}: {e}")
         return f"Database error: {e}", 500
@@ -281,10 +281,7 @@ def get_tasks():
                   status code with an error message.
     """
     try:
-        # Retrieve all tasks using SQLAlchemy
-        tasks = db.session.scalars(
-            select(Task)
-        )  # This will return a list of Task objects
+        tasks = db.session.scalars(select(Task))
 
         # Convert the list of Task objects to a list of dictionaries
         tasks_list = [
@@ -296,12 +293,13 @@ def get_tasks():
             }
             for task in tasks
         ]
-
-        return jsonify(tasks_list)  # Return the list of tasks as JSON
+        # Return the list of tasks as JSON
+        return jsonify(tasks_list)  
     except Exception as e:
         error_message = f"Error when returning all tasks: {str(e)}"
         print(error_message)
-        return jsonify({"error": error_message}), 500  # Return a 500 error status
+        # Return a 500 error status
+        return jsonify({"error": error_message}), 500
 
 
 @login_required
