@@ -2,7 +2,7 @@
 
 from config import db
 from flask_app import Task
-from helper import insert_task
+from tests.helper import insert_task
 
 
 def test_delete_all_tasks(client):

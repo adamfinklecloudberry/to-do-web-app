@@ -1,6 +1,6 @@
 """Tests get_tasks"""
 
-from helper import insert_task
+from tests.helper import insert_task
 
 
 def test_get_tasks(client):
