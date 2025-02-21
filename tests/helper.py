@@ -1,7 +1,7 @@
 """A helper function for tests"""
 
 from config import db
-from flask_app import Task
+from models.task import Task
 
 
 def insert_task(name: str, due_date: str, complete: bool) -> None:

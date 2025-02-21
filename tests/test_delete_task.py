@@ -1,7 +1,7 @@
 """Tests delete_task"""
 
 from config import db
-from flask_app import Task
+from models.task import Task
 from tests.helper import insert_task
 
 

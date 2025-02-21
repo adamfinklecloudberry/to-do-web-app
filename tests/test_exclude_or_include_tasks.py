@@ -4,7 +4,9 @@ Tests for including and excluding data from the task list
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import db
-from flask_app import app, Task, User
+from flask_app import app
+from models.task import Task
+from models.user import User
 
 
 def test_home_exclude_complete_tasks(client):

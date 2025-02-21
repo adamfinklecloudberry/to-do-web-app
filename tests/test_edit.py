@@ -1,6 +1,7 @@
 from flask import url_for
 from config import db
-from flask_app import app, Task
+from flask_app import app
+from models.task import Task
 
 
 def test_edit_get(client):
