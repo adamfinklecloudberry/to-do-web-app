@@ -1,8 +1,8 @@
 """Tests delete_task"""
 
-from config import db
 from models.task import Task
-from tests.helper import insert_task
+from tests.helpers import insert_task, get_task_by_id
+from flask import url_for
 
 
 def test_delete_task(client):
@@ -14,6 +14,6 @@ def test_delete_task(client):
     """
     task_id, name, due_date, complete = 1, "Test task", "2023-01-01", False
     insert_task(name, due_date, complete)
-    response = client.get(f"/delete/{task_id}")
+    response = client.get(url_for("delete_task", task_id=task_id))
     assert response.status_code == 302  # redirect
-    assert db.session.get(Task, 1) is None
+    assert get_task_by_id(1) is None

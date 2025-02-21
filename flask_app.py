@@ -47,7 +47,7 @@ def home() -> str:
         str: The rendered HTML template for the home page.
     """
     try:
-        tasks = db.session.scalars(select(Task))
+        tasks = db.session.scalars(select(Task)).all()
     except Exception as e:
         print(f"Error querying tasks from table {Task.__tablename__}: {e}")
         return f"Database error: {e}", 500
@@ -57,7 +57,9 @@ def home() -> str:
         [task for task in tasks if not task.complete] if show_incomplete else tasks
     )
 
-    return render_template("index.html", tasks=filtered_tasks)
+    return render_template(
+        "index.html", tasks=filtered_tasks, number_of_tasks=len(filtered_tasks)
+    )
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -106,7 +108,7 @@ def logout():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.scalar(select(User).where(User.id == user_id))
 
 
 @login_required

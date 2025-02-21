@@ -1,7 +1,7 @@
 from flask import url_for
-from config import db
 from flask_app import app
 from models.task import Task
+from tests.helpers import insert_task, get_task_by_id
 
 
 def test_edit_get(client):
@@ -16,8 +16,7 @@ def test_edit_get(client):
     Task'.
     """
     with app.app_context():
-        db.session.add(Task(name="Task 1", due_date="2023-10-01"))
-        db.session.commit()
+        insert_task(name="Task 1", due_date="2023-10-01")
     response = client.get(url_for("edit", task_id=1))
     assert response.status_code == 200
     assert b"Edit the Name of This Task" in response.data
@@ -40,10 +39,7 @@ def test_edit_task_success(client):
     """
     with app.app_context():
         # Step 1: Insert a new task into the database
-        name, due_date, complete = "walk", "2024-04-19", False
-        new_task = Task(name=name, due_date=due_date, complete=complete)
-        db.session.add(new_task)
-        db.session.commit()
+        insert_task("walk", "2024-04-19")
 
     # Step 2: Send a POST request to the edit route with updated task data
     response = client.post("/edit/1", data={"task": "Updated Task"})
@@ -53,5 +49,5 @@ def test_edit_task_success(client):
     assert response.location == url_for("home", _external=False)
 
     # Step 4: Verify the task has been updated in the database
-    updated_task = db.session.get(Task, 1)  # Fetch the task with id = 1
+    updated_task = get_task_by_id(1)
     assert updated_task.name == "Updated Task"

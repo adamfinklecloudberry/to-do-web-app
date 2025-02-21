@@ -1,6 +1,7 @@
+from flask import url_for
 from config import db
 from models.task import Task
-from tests.helper import insert_task
+from tests.helpers import insert_task, get_task_by_id
 
 
 def test_complete_task(client):
@@ -14,10 +15,10 @@ def test_complete_task(client):
     """
     name, due_date, complete = "Test task", "2023-01-01", False
     insert_task(name, due_date, complete)
-    response = client.post("/complete/1")
+    response = client.post(url_for("complete_task", task_id=1))
     assert response.status_code == 302  # redirect
 
-    task = db.session.get(Task, 1)
+    task = get_task_by_id(1)
     task_id = 1
     complete = 1
     assert task.name == "Test task"

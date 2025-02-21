@@ -1,6 +1,7 @@
 """Tests get_tasks"""
 
-from tests.helper import insert_task
+from tests.helpers import insert_task
+from flask import url_for
 
 
 def test_get_tasks(client):
@@ -15,7 +16,7 @@ def test_get_tasks(client):
     other_name, other_due_date, other_complete = "Test task 2", "2023-01-02", False
     insert_task(name, due_date, complete)
     insert_task(name, due_date, complete)
-    response = client.get("/api/tasks")
+    response = client.get(url_for("get_tasks"))
     assert response.status_code == 200
     assert response.json == [
         {"id": 1, "name": name, "due_date": due_date, "complete": complete},

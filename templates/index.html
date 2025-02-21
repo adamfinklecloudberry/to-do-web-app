@@ -163,8 +163,10 @@
             {% endif %}
         </button>
     </form>
+
+    <p style="margin-bottom: 0px;">Number of tasks: {{ number_of_tasks }}</p>
     
-    <ul>
+    <ul style="margin-top: 10px;">
         <li>Name - Due Date - Complete</li>
         {% for task in tasks %}
             <li>

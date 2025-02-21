@@ -2,11 +2,11 @@
 Tests for including and excluding data from the task list
 """
 
-from werkzeug.security import generate_password_hash, check_password_hash
-from config import db
 from flask_app import app
 from models.task import Task
 from models.user import User
+from tests.helpers import add_test_user, login_test_user, insert_task
+from flask import url_for
 
 
 def test_home_exclude_complete_tasks(client):
@@ -19,33 +19,22 @@ def test_home_exclude_complete_tasks(client):
     parameter, and asserts that only incomplete tasks are present in
     the response data
     """
+    # Add a test user
+    add_test_user()
+
     # Add test data to the database with SQLAlchemy
-    with app.app_context():
-        # Delete all existing tasks
-        db.session.query(Task).delete()
-
-        # Add test tasks
-        db.session.add(Task(name="Task 1", due_date="2023-10-01"))
-        db.session.add(Task(name="Task 2", due_date="2023-10-02", complete=True))
-        db.session.add(Task(name="Task 3", due_date="2023-10-03"))
-
-        # Create a test user (assuming you have a User model)
-        test_user = User(
-            email="test@user.com", password=generate_password_hash("password")
-        )
-        db.session.add(test_user)
-        db.session.commit()
+    insert_task("Task 1", "2023-10-01")
+    insert_task("Task 2", "2023-10-02", True)
+    insert_task("Task 3", "2023-10-03")
 
     # Log in the test user
-    response = client.post(
-        "/login", data={"email": "test@user.com", "password": "password"}
-    )
+    response = login_test_user(client)
 
     # Check if login was successful
     assert response.status_code == 302  # Assuming a redirect after login
 
     # Test: Request the home route with the 'incomplete' parameter set to 'true'
-    response = client.get("/?incomplete=true")
+    response = client.get(url_for("home", incomplete=True))
 
     # Assert: Check that the response status code is 200 (OK)
     assert response.status_code == 200
@@ -67,31 +56,22 @@ def test_home_include_all_tasks(client):
     'incomplete' parameter, and asserts that all tasks are present in
     the response data
     """
-    # Setup: Add test data to the database
-    with app.app_context():
-        # Create a test user (assuming you have a User model)
-        test_user = User(
-            email="test@user.com", password=generate_password_hash("password")
-        )
-        db.session.add(test_user)
-        db.session.commit()
+    # Add a test user
+    add_test_user()
 
-        # Add test tasks
-        db.session.add(Task(name="Task 1", due_date="2023-10-01"))
-        db.session.add(Task(name="Task 2", due_date="2023-10-02", complete=True))
-        db.session.add(Task(name="Task 3", due_date="2023-10-03"))
-        db.session.commit()
+    # Add test data to the database
+    insert_task("Task 1", "2023-10-01")
+    insert_task("Task 2", "2023-10-02", True)
+    insert_task("Task 3", "2023-10-03")
 
     # Log in the test user
-    response = client.post(
-        "/login", data={"email": "test@user.com", "password": "password"}
-    )
+    response = login_test_user(client)
 
     # Check if login was successful
     assert response.status_code == 302  # Assuming a redirect after login
 
     # Test: Request the home route without the 'incomplete' parameter
-    response = client.get("/")
+    response = client.get(url_for("home"))
 
     # Assert: Check that the response status code is 200 (OK)
     assert response.status_code == 200
