@@ -1,4 +1,5 @@
 import os
+import secrets
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
@@ -10,6 +11,9 @@ login_manager = LoginManager()
 
 
 def init_app(app):
+    # Set the secret key
+    app.secret_key = secrets.token_hex(32)
+
     # Set the database file based on the environment
     if app.config["TESTING"] == True:
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(

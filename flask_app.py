@@ -10,7 +10,6 @@ a JSON API for task management
 """
 
 import os
-import secrets
 from flask import Flask, render_template, request, redirect, flash, jsonify, url_for
 from flask_login import (
     LoginManager,
@@ -26,14 +25,9 @@ from models.task import Task
 from models.user import User
 
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(32)
 
 # Initialize the app with the database and login manager
 init_app(app)
-
-# Import the models after initializing the app
-from models.task import Task
-from models.user import User
 
 
 @app.route("/")
