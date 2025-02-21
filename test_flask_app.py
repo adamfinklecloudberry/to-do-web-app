@@ -15,7 +15,8 @@ import json
 import pytest
 from flask import Flask, flash, get_flashed_messages, url_for
 import sqlite3
-from flask_app import app, db, init_db, Task, User
+from flask_app import app, init_db, Task, User
+from config import db
 from sqlalchemy import text
 from werkzeug.security import generate_password_hash, check_password_hash
 

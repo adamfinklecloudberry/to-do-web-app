@@ -12,7 +12,6 @@ a JSON API for task management
 import os
 import secrets
 from flask import Flask, render_template, request, redirect, flash, jsonify, url_for
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
     LoginManager,
     login_user,
@@ -22,48 +21,19 @@ from flask_login import (
     UserMixin,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+from config import init_app, db, login_manager
+from models.task import Task
+from models.user import User
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 
-# Set the database file based on the environment
-if app.config["TESTING"] == True:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
-        os.path.dirname(__file__), "test.db"
-    )
-else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
-        os.path.dirname(__file__), "database.db"
-    )
+# Initialize the app with the database and login manager
+init_app(app)
 
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# Initialize the SQLAlchemy object
-db = SQLAlchemy(app)
-
-# Initialize the login manager
-login_manager = LoginManager(app)
-login_manager.login_view = "login"
-
-
-class Task(db.Model):
-    __tablename__ = "tasks"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.Text, nullable=False)
-    due_date = db.Column(db.Text, nullable=False)
-    complete = db.Column(db.Boolean, default=False, nullable=False)
-
-
-class User(db.Model, UserMixin):
-    __tablename__ = "user"
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
-
-    def __repr__(self):
-        return f"<User {self.email}>"
-
+# Import the models after initializing the app
+from models.task import Task
+from models.user import User
 
 def init_db():
     """
@@ -75,21 +45,6 @@ def init_db():
     with app.app_context():
         db.create_all()
         print("Database initialized and tables created.")
-
-
-# Extract the database file path from the SQLALCHEMY_DATABASE_URI
-db_uri = app.config["SQLALCHEMY_DATABASE_URI"]
-db_path = db_uri.split("///")[-1]  # Get the path after 'sqlite:///'
-
-# Debugging output
-print(f"Database path: {db_path}")
-
-# Check if the database file exists
-if not os.path.exists(db_path):
-    print("Database file does not exist. Initializing database...")
-    init_db()
-else:
-    print("Database file already exists.")
 
 
 @app.route("/")
