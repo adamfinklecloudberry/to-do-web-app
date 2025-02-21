@@ -10,5 +10,5 @@ def test_count_tasks(client):
     insert_task("Test task", "2023-01-01")
     add_test_user()
     login_test_user(client)
-    response = client.get(url_for("home"))
+    response = client.get(url_for("home.home"))
     assert b"Number of tasks: 1" in response.data

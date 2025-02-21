@@ -34,7 +34,7 @@ def test_home_exclude_complete_tasks(client):
     assert response.status_code == 302  # Assuming a redirect after login
 
     # Test: Request the home route with the 'incomplete' parameter set to 'true'
-    response = client.get(url_for("home", incomplete=True))
+    response = client.get(url_for("home.home", incomplete=True))
 
     # Assert: Check that the response status code is 200 (OK)
     assert response.status_code == 200
@@ -71,7 +71,7 @@ def test_home_include_all_tasks(client):
     assert response.status_code == 302  # Assuming a redirect after login
 
     # Test: Request the home route without the 'incomplete' parameter
-    response = client.get(url_for("home"))
+    response = client.get(url_for("home.home"))
 
     # Assert: Check that the response status code is 200 (OK)
     assert response.status_code == 200

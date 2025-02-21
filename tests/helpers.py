@@ -32,5 +32,6 @@ def add_test_user():
 def login_test_user(client):
     """Logs the test user in and returns a response"""
     return client.post(
-        url_for("login"), data={"email": "test@user.com", "password": "password"}
+        url_for("authentication.login"),
+        data={"email": "test@user.com", "password": "password"},
     )

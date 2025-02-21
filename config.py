@@ -31,7 +31,7 @@ def init_app(app):
 
     # Initialize the login manager
     login_manager.init_app(app)
-    login_manager.login_view = "login"
+    login_manager.login_view = "authentication.login"
 
     # Create the database and tables
     with app.app_context():

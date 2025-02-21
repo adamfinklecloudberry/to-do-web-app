@@ -11,20 +11,13 @@ a JSON API for task management
 
 import os
 from flask import Flask, render_template, request, redirect, flash, jsonify, url_for
-from flask_login import (
-    LoginManager,
-    login_user,
-    logout_user,
-    login_required,
-    current_user,
-    UserMixin,
-)
+from flask_login import login_required
 from sqlalchemy import select
-from werkzeug.security import generate_password_hash, check_password_hash
 from config import init_app, db, login_manager
 from models.task import Task
 from models.user import User
 from routes.home import home_bp
+from routes.authentication import authentication_bp
 
 
 app = Flask(__name__)
@@ -34,86 +27,7 @@ init_app(app)
 
 # Register the blueprint
 app.register_blueprint(home_bp)
-
-
-@app.route("/")
-@login_required
-def home() -> str:
-    """
-    Renders the home page
-
-    Retrieves all tasks from the database and renders the home HTML
-    template with the list of tasks
-
-    Excludes complete tasks if the request includes an argument
-    telling it to
-
-    Returns:
-        str: The rendered HTML template for the home page.
-    """
-    try:
-        tasks = db.session.scalars(select(Task)).all()
-    except Exception as e:
-        print(f"Error querying tasks from table {Task.__tablename__}: {e}")
-        return f"Database error: {e}", 500
-
-    show_incomplete = request.args.get("incomplete", "false").lower() == "true"
-    filtered_tasks = (
-        [task for task in tasks if not task.complete] if show_incomplete else tasks
-    )
-
-    return render_template(
-        "index.html", tasks=filtered_tasks, number_of_tasks=len(filtered_tasks)
-    )
-
-
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = generate_password_hash(
-            request.form["password"], method="pbkdf2:sha256"
-        )
-        new_user = User(email=email, password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        flash("Registration successful! Please log in.", "success")
-        return redirect(url_for("login"))
-    return render_template("register.html")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            user.logged_in = True
-            db.session.commit()
-            return redirect(url_for("dashboard"))
-        else:
-            flash("Login failed. Check your email and password.", "danger")
-    return render_template("login.html")
-
-
-@app.route("/dashboard")
-@login_required
-def dashboard():
-    return render_template("dashboard.html")
-
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for("login"))
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return db.session.scalar(select(User).where(User.id == user_id))
+app.register_blueprint(authentication_bp)
 
 
 @login_required
@@ -142,7 +56,7 @@ def add_task():
         except Exception as e:
             flash("Error in adding task", "error")
             print(f"Error when running add_task: {str(e)}")
-    return redirect(url_for("home"))
+    return redirect(url_for("home.home"))
 
 
 @login_required
@@ -152,13 +66,13 @@ def edit(task_id: int):
 
     if task is None:
         flash("Task not found", "error")
-        return redirect(url_for("home"))
+        return redirect(url_for("home.home"))
 
     if request.method == "POST":
         new_name = request.form.get("task")
         task.name = new_name
         db.session.commit()
-        return redirect(url_for("home"))
+        return redirect(url_for("home.home"))
 
     return render_template("edit.html", task_id=task_id, task=task)
 
@@ -186,7 +100,7 @@ def complete_task(task_id: int):
 
         if task is None:
             flash("Task not found", "error")
-            return redirect(url_for("home"))
+            return redirect(url_for("home.home"))
 
         task.complete = not task.complete
         db.session.commit()  # Commit the changes to the database
@@ -195,7 +109,7 @@ def complete_task(task_id: int):
         flash("Error completing task", "error")
         print(f"Error when running complete_task: {str(e)}")
 
-    return redirect(url_for("home"))
+    return redirect(url_for("home.home"))
 
 
 @login_required
@@ -221,7 +135,7 @@ def delete_task(task_id: int):
 
         if task is None:
             flash("Task not found", "error")
-            return redirect(url_for("home"))
+            return redirect(url_for("home.home"))
 
         db.session.delete(task)
         db.session.commit()
@@ -231,7 +145,7 @@ def delete_task(task_id: int):
         flash("Error deleting task", "error")
         print(f"Error when running delete_task: {str(e)}")
 
-    return redirect(url_for("home"))
+    return redirect(url_for("home.home"))
 
 
 @login_required
@@ -261,7 +175,7 @@ def delete_all_tasks():
         flash("Error deleting all tasks", "error")
         print(f"Error when running delete_all_tasks: {str(e)}")
 
-    return redirect(url_for("home"))
+    return redirect(url_for("home.home"))
 
 
 @login_required

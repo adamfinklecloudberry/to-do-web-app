@@ -46,7 +46,7 @@ def test_edit_task_success(client):
 
     # Step 3: Check that the response status code is 302 (Redirect)
     assert response.status_code == 302  # Redirect to home
-    assert response.location == url_for("home", _external=False)
+    assert response.location == url_for("home.home", _external=False)
 
     # Step 4: Verify the task has been updated in the database
     updated_task = get_task_by_id(1)
