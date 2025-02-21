@@ -16,7 +16,8 @@ def test_get_tasks(client):
     other_name, other_due_date, other_complete = "Test task 2", "2023-01-02", False
     insert_task(name, due_date, complete)
     insert_task(name, due_date, complete)
-    response = client.get(url_for("get_tasks"))
+    response = client.get(url_for("api.get_tasks"))
+    print(response.data)
     assert response.status_code == 200
     assert response.json == [
         {"id": 1, "name": name, "due_date": due_date, "complete": complete},

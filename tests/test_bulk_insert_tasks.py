@@ -25,7 +25,7 @@ def test_bulk_add_tasks_success(client):
         {"name": "Task 2", "due_date": "2023-10-02", "complete": False},
     ]
     response = client.post(
-        url_for("bulk_add_tasks"),
+        url_for("api.bulk_add_tasks"),
         data=json.dumps(tasks),
         content_type="application/json",
     )
@@ -51,7 +51,7 @@ def test_bulk_add_tasks_invalid_format(client):
     """
     invalid_data = {"name": "Task 1", "due_date": "2023-10-01"}
     response = client.post(
-        url_for("bulk_add_tasks"),
+        url_for("api.bulk_add_tasks"),
         data=json.dumps(invalid_data),
         content_type="application/json",
     )
@@ -78,7 +78,7 @@ def test_bulk_add_tasks_missing_fields(client):
     task_with_missing_due_date = [{"name": "Task 1"}]
 
     response = client.post(
-        url_for("bulk_add_tasks"),
+        url_for("api.bulk_add_tasks"),
         data=json.dumps(task_with_missing_name),
         content_type="application/json",
     )
@@ -89,7 +89,7 @@ def test_bulk_add_tasks_missing_fields(client):
     )
 
     response = client.post(
-        url_for("bulk_add_tasks"),
+        url_for("api.bulk_add_tasks"),
         data=json.dumps(task_with_missing_due_date),
         content_type="application/json",
     )
