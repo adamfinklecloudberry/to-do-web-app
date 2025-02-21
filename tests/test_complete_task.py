@@ -15,7 +15,7 @@ def test_complete_task(client):
     """
     name, due_date, complete = "Test task", "2023-01-01", False
     insert_task(name, due_date, complete)
-    response = client.post(url_for("complete_task", task_id=1))
+    response = client.post(url_for("tasks.complete_task", task_id=1))
     assert response.status_code == 302  # redirect
 
     task = get_task_by_id(1)

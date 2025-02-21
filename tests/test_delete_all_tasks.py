@@ -3,6 +3,7 @@
 from config import db
 from models.task import Task
 from tests.helpers import insert_task
+from flask import url_for
 
 
 def test_delete_all_tasks(client):
@@ -16,7 +17,7 @@ def test_delete_all_tasks(client):
     other_name, other_due_date, other_complete = "Test task 2", "2023-01-02", False
     insert_task(name, due_date, complete)
     insert_task(name, due_date, complete)
-    response = client.post("/delete_all")
+    response = client.post(url_for("tasks.delete_all_tasks"))
     assert response.status_code == 302  # redirect
     assert db.session.get(Task, 1) is None
     assert db.session.get(Task, 2) is None

@@ -30,7 +30,7 @@ def test_add_task_success(client):
     success message
     """
     response = client.post(
-        url_for("add_task"), data={"task": "Test Task", "due_date": "2023-12-31"}
+        url_for("tasks.add_task"), data={"task": "Test Task", "due_date": "2023-12-31"}
     )
     assert response.status_code == 302  # Check for redirect
     with app.app_context():
@@ -67,7 +67,7 @@ def test_add_task_database_error(client):
         db.session.commit()
 
     response = client.post(
-        url_for("add_task"), data={"task": "Test Task", "due_date": "2023-12-31"}
+        url_for("tasks.add_task"), data={"task": "Test Task", "due_date": "2023-12-31"}
     )
     assert response.status_code == 302  # redirect
     with app.app_context():
