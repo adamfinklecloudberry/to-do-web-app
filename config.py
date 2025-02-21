@@ -8,6 +8,7 @@ db = SQLAlchemy()
 # Initialize the login manager
 login_manager = LoginManager()
 
+
 def init_app(app):
     # Set the database file based on the environment
     if app.config["TESTING"] == True:

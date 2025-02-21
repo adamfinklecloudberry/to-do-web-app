@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 # Import the db instance from the main app
 from config import db
 
+
 class Task(db.Model):
     __tablename__ = "tasks"
 

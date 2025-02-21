@@ -35,17 +35,6 @@ init_app(app)
 from models.task import Task
 from models.user import User
 
-def init_db():
-    """
-    Initializes the database
-
-    Creates the SQLAlchemy database and the tasks table if it does not
-    already exist
-    """
-    with app.app_context():
-        db.create_all()
-        print("Database initialized and tables created.")
-
 
 @app.route("/")
 @login_required  # Ensure the user is logged in to access this route
@@ -399,5 +388,4 @@ def bulk_add_tasks():
 
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
