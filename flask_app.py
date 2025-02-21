@@ -19,6 +19,7 @@ from flask_login import (
     current_user,
     UserMixin,
 )
+from sqlalchemy import select
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import init_app, db, login_manager
 from models.task import Task
@@ -140,7 +141,7 @@ def add_task():
 @login_required
 @app.route("/edit/<int:task_id>", methods=["GET", "POST"])
 def edit(task_id: int):
-    task = Task.query.get(task_id)
+    task = db.session.get(Task, task_id)
 
     if task is None:
         flash("Task not found", "error")
@@ -175,7 +176,7 @@ def complete_task(task_id: int):
     """
     try:
         # Retrieve the task using SQLAlchemy
-        task = Task.query.get(task_id)
+        task = db.session.get(Task, task_id)
 
         if task is None:
             flash("Task not found", "error")
@@ -212,7 +213,7 @@ def delete_task(task_id: int):
     """
     try:
         # Retrieve the task using SQLAlchemy
-        task = Task.query.get(task_id)
+        task = db.session.get(Task, task_id)
 
         if task is None:
             flash("Task not found", "error")
@@ -281,7 +282,9 @@ def get_tasks():
     """
     try:
         # Retrieve all tasks using SQLAlchemy
-        tasks = Task.query.all()  # This will return a list of Task objects
+        tasks = db.session.scalars(
+            select(Task)
+        )  # This will return a list of Task objects
 
         # Convert the list of Task objects to a list of dictionaries
         tasks_list = [

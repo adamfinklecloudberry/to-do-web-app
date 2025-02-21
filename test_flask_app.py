@@ -253,7 +253,7 @@ def test_edit_task_success(client):
     assert response.location == url_for("home", _external=False)
 
     # Step 4: Verify the task has been updated in the database
-    updated_task = Task.query.get(1)  # Fetch the task with id = 1
+    updated_task = db.session.get(Task, 1)  # Fetch the task with id = 1
     assert updated_task.name == "Updated Task"
 
 
@@ -304,7 +304,7 @@ def get_task(task_id: int) -> None:
     Returns:
         The task in the database with this id
     """
-    return Task.query.get(task_id)
+    return db.session.get(Task, task_id)
 
 
 def test_complete_task(client):
