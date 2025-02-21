@@ -24,11 +24,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from config import init_app, db, login_manager
 from models.task import Task
 from models.user import User
+from routes.home import home_bp
+
 
 app = Flask(__name__)
 
 # Initialize the app with the database and login manager
 init_app(app)
+
+# Register the blueprint
+app.register_blueprint(home_bp)
 
 
 @app.route("/")
