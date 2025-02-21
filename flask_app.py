@@ -135,7 +135,7 @@ def add_task():
         except Exception as e:
             flash("Error in adding task", "error")
             print(f"Error when running add_task: {str(e)}")
-    return redirect("/")
+    return redirect(url_for("home"))
 
 
 @login_required
@@ -145,13 +145,13 @@ def edit(task_id: int):
 
     if task is None:
         flash("Task not found", "error")
-        return redirect("/")
+        return redirect(url_for("home"))
 
     if request.method == "POST":
         new_name = request.form.get("task")
         task.name = new_name
         db.session.commit()
-        return redirect("/")
+        return redirect(url_for("home"))
 
     return render_template("edit.html", task_id=task_id, task=task)
 
@@ -179,7 +179,7 @@ def complete_task(task_id: int):
 
         if task is None:
             flash("Task not found", "error")
-            return redirect("/")
+            return redirect(url_for("home"))
 
         task.complete = not task.complete
         db.session.commit()  # Commit the changes to the database
@@ -188,7 +188,7 @@ def complete_task(task_id: int):
         flash("Error completing task", "error")
         print(f"Error when running complete_task: {str(e)}")
 
-    return redirect("/")
+    return redirect(url_for("home"))
 
 
 @login_required
@@ -214,7 +214,7 @@ def delete_task(task_id: int):
 
         if task is None:
             flash("Task not found", "error")
-            return redirect("/")
+            return redirect(url_for("home"))
 
         db.session.delete(task)
         db.session.commit()
@@ -224,7 +224,7 @@ def delete_task(task_id: int):
         flash("Error deleting task", "error")
         print(f"Error when running delete_task: {str(e)}")
 
-    return redirect("/")
+    return redirect(url_for("home"))
 
 
 @login_required
@@ -254,7 +254,7 @@ def delete_all_tasks():
         flash("Error deleting all tasks", "error")
         print(f"Error when running delete_all_tasks: {str(e)}")
 
-    return redirect("/")
+    return redirect(url_for("home"))
 
 
 @login_required
