@@ -175,14 +175,12 @@ def complete_task(task_id: int):
         Response: A redirect response to the home page.
     """
     try:
-        # Retrieve the task using SQLAlchemy
         task = db.session.get(Task, task_id)
 
         if task is None:
             flash("Task not found", "error")
             return redirect("/")
 
-        # Toggle the completion status
         task.complete = not task.complete
         db.session.commit()  # Commit the changes to the database
         flash("Task completion status updated", "success")
@@ -212,16 +210,14 @@ def delete_task(task_id: int):
         Response: A redirect response to the home page.
     """
     try:
-        # Retrieve the task using SQLAlchemy
         task = db.session.get(Task, task_id)
 
         if task is None:
             flash("Task not found", "error")
             return redirect("/")
 
-        # Delete the task
         db.session.delete(task)
-        db.session.commit()  # Commit the changes to the database
+        db.session.commit()
         flash("Task deleted successfully", "danger")
     except Exception as e:
         db.session.rollback()  # Rollback the session in case of error
@@ -250,9 +246,8 @@ def delete_all_tasks():
                   deletion operation
     """
     try:
-        # Delete all tasks using SQLAlchemy
-        db.session.query(Task).delete()  # This will delete all tasks
-        db.session.commit()  # Commit the changes to the database
+        db.session.query(Task).delete()
+        db.session.commit()
         flash("All tasks deleted successfully", "danger")
     except Exception as e:
         db.session.rollback()  # Rollback the session in case of error
@@ -294,7 +289,7 @@ def get_tasks():
             for task in tasks
         ]
         # Return the list of tasks as JSON
-        return jsonify(tasks_list)  
+        return jsonify(tasks_list)
     except Exception as e:
         error_message = f"Error when returning all tasks: {str(e)}"
         print(error_message)
