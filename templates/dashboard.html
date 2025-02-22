@@ -8,10 +8,12 @@
 </head>
 <body>
     <div class="container">
-        <h2 class="mt-5">Dashboard</h2>
-        <p>Welcome, {{ current_user.email }}!</p>
-        <a href="{{ url_for('home.home') }}" class="btn btn-primary">To Do List</a>
-        <a href="{{ url_for('authentication.logout') }}" class="btn btn-danger">Logout</a>
+        <h2 class="mt-5 text-center">Dashboard</h2>
+        <p class="text-center">Welcome, {{ current_user.email }}!</p>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <a href="{{ url_for('home.home') }}" class="btn btn-primary">To Do List</a>
+            <a href="{{ url_for('authentication.logout') }}" class="btn btn-danger">Logout</a>
+        </div>
     </div>
 </body>
 </html>
