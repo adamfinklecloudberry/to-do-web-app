@@ -9,7 +9,6 @@ from models.task import Task
 tasks_bp = Blueprint("tasks", __name__)
 
 
-
 @login_required
 @tasks_bp.route("/add", methods=["POST"])
 def add_task():
