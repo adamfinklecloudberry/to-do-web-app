@@ -5,10 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .form-control {
+            border: none; /* Remove the border */
+            box-shadow: none; /* Remove the box shadow */
+            text-align: center; /* Center the text inside the input fields */
+            width: 300px; /* Set a fixed width for the input fields */
+        }
+        .form-control:focus {
+            border: none; /* Remove the border on focus */
+            box-shadow: none; /* Remove the box shadow on focus */
+        }
+        .hr-thin {
+            border: 0;
+            border-top: 1px solid #494949; /* Adjust the color and thickness as needed */
+            margin: 5px 0; /* Reduce space above and below the line */
+        }
+        .form-group {
+            display: flex;
+            justify-content: center; /* Center the input fields */
+            margin: 0; /* Remove margin to reduce vertical spacing */
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center the form elements horizontally */
+        }
+        .btn {
+            margin-top: 10px; /* Add some space above the button */
+        }
+        .text-center {
+            text-align: center; /* Center the text */
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h2 class="mt-5">Login</h2>
+        <h2 class="mt-5 text-center">Login</h2>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="mt-3">
@@ -21,17 +54,16 @@
             {% endif %}
         {% endwith %}
         <form method="POST" class="mt-3">
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" class="form-control" name="email" required>
+            <div class="form-group email">
+                <input type="email" class="form-control" name="email" required placeholder="email" autofocus>
             </div>
+            <hr class="hr-thin">
             <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" class="form-control" name="password" required>
+                <input type="password" class="form-control" name="password" required placeholder="password">
             </div>
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
-        <p class="mt-3">Don't have an account? <a href="{{ url_for('authentication.register') }}">Register here</a>.</p>
+        <p class="mt-3 text-center">Don't have an account? <a href="{{ url_for('authentication.register') }}">Register here</a>.</p>
     </div>
 </body>
 </html>
