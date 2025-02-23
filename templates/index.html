@@ -91,7 +91,7 @@
         .task-form input[type="date"] {
             font-size: 1em;   /* Increase font size */
             padding: 0.5em;   /* Increase padding (adjust as needed) */
-            height: 1em;      /* Increase height */
+            height: 2.5em;      /* Increase height */
             margin-bottom: 10px; /* Add some space below each input */
         }
 
@@ -123,6 +123,7 @@
             background-color: #811621; /* Darker shade on hover */
         }
     </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <h1>My To-Do List</h1>
@@ -140,6 +141,10 @@
         {% endwith %}
     </div>    
     
+    <div style="display: flex; justify-content: center; gap: 10px;">
+        <a href="{{ url_for('authentication.logout') }}" class="btn btn-danger">Logout</a>
+    </div>
+
     <form action="/delete_all" method="post">
         <button type="submit" class="delete-all-button">Delete All Tasks</button>
     </form>
@@ -164,7 +169,7 @@
         </button>
     </form>
 
-    <p style="margin-bottom: 0px;">Number of tasks: {{ number_of_tasks }}</p>
+    <p style="margin-top: 10px; margin-bottom: 0px;">Number of tasks: {{ number_of_tasks }}</p>
     
     <ul style="margin-top: 10px;">
         <li>Name - Due Date - Complete</li>
