@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.2.0]
+
+### Changed
+- Switched from requirements.txt to poetry
+
+
 ## [1.1.1]
 
 ### Changed
