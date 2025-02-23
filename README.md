@@ -42,19 +42,15 @@ git clone https://github.com/adamfinklecloudberry/to-do-web-app.git
 ```bash
 cd to-do-web-app
 ```
-3. Create a virtual environment
+3. Install poetry if need be
 ```
-python3 -m venv venv
+pip install poetry
 ```
-4. Activate the virtual environment
+4. Install the dependencies
 ```
-source venv/bin/activate
+poetry install
 ```
-5. Install the dependencies:
-```bash
-pip install -r requirements.txt
-```
-6. Start the development server:
+5. Start the development server:
 ```bash
 python3 -m flask_app
 ```
