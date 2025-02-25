@@ -7,19 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1]
+
+### Changed
+
+- Processed debug environment variable into boolean
+
 
 ## [1.4.0]
 
 ### Changed
 
-Added support for environment variables
+- Added support for environment variables
 
 
 ## [1.3.0]
 
 ### Changed
 
-Switched back from poetry to requirements.txt
+- Switched back from poetry to requirements.txt
 
 
 ## [1.2.1]
