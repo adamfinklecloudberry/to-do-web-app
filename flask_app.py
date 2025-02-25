@@ -15,6 +15,8 @@ from routes.home import home_bp
 from routes.authentication import authentication_bp
 from routes.tasks import tasks_bp
 from routes.api import api_bp
+from dotenv import load_dotenv
+import os
 
 
 app = Flask(__name__)
@@ -30,4 +32,6 @@ app.register_blueprint(api_bp)
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    load_dotenv()
+    app.run(os.getenv("BACKEND_HOST_ADDRESS"), 
+            debug=os.getenv("BACKEND_DEBUG_MODE"))
