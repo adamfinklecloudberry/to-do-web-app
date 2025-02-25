@@ -33,5 +33,6 @@ app.register_blueprint(api_bp)
 
 if __name__ == "__main__":
     load_dotenv()
+    debug = True if os.getenv("BACKEND_DEBUG_MODE") == "True" else False
     app.run(os.getenv("BACKEND_HOST_ADDRESS"), 
-            debug=os.getenv("BACKEND_DEBUG_MODE"))
+            debug=debug)
