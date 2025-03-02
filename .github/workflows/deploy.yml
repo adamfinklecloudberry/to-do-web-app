@@ -42,7 +42,7 @@ jobs:
           port: 22
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/${{ secrets.EC2_USER_NAME }}/flask-todo-app
+            cd /home/${{ secrets.EC2_USER_NAME }}/to-do-web-app
             git pull origin main
 
       - name: SSH Install dependencies
@@ -53,7 +53,7 @@ jobs:
           port: 22
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/${{ secrets.EC2_USER_NAME }}/flask-todo-app
+            cd /home/${{ secrets.EC2_USER_NAME }}/to-do-web-app
             python3 -m venv venv
             source venv/bin/activate
             pip install -r requirements.txt
@@ -65,7 +65,7 @@ jobs:
           username: ${{ secrets.EC2_USER_NAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/${{ secrets.EC2_USER_NAME }}/flask-todo-app
+            cd /home/${{ secrets.EC2_USER_NAME }}/to-do-web-app
             pkill -f "python3 app.py" || true
             python3 app.py 
             exit 0
