@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy Flask App
 
 on:
   push:
@@ -10,15 +10,62 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Deploy to EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_KEY: ${{ secrets.EC2_SSH_KEY }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Virtual env
         run: |
-          echo "$EC2_KEY" > private_key && chmod 600 private_key
-          scp -i private_key -r . $EC2_USER@$EC2_HOST:/flask_app
-          ssh -i private_key $EC2_USER@$EC2_HOST 'bash /deploy_script.sh'
+          python3 -m venv venv
+          source venv/bin/activate
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Unit Tests
+        run: |
+          pytest
+
+      # ------ REMOTE DEPLOYMENT STEPS VIA SSH-ACTION ------
+
+      - name: SSH Pull latest code
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER_NAME }}
+          port: 22
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.EC2_USER_NAME }}/flask-todo-app
+            git pull origin main
+
+      - name: SSH Install dependencies
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER_NAME }}
+          port: 22
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.EC2_USER_NAME }}/flask-todo-app
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+
+      - name: SSH Restart app
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER_NAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.EC2_USER_NAME }}/flask-todo-app
+            pkill -f "python3 app.py" || true
+            python3 app.py 
+            exit 0
