@@ -66,6 +66,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/${{ secrets.EC2_USER_NAME }}/to-do-web-app
-            pkill -f "python3 app.py" || true
-            python3 app.py 
+            pkill -f "python3 flask_app.py" || true
+            python3 flask_app.py 
             exit 0
