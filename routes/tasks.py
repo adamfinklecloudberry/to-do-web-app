@@ -15,6 +15,7 @@ from flask_login import login_required
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 import os
+import io
 from config import db
 from models.task import Task
 
