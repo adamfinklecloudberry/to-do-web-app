@@ -1,9 +1,19 @@
 """Routes for CRUD on tasks"""
 
-from flask import Flask, Blueprint, render_template, request, redirect, flash, url_for
+from flask import (
+    Flask,
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    flash,
+    url_for,
+    send_file,
+    abort,
+)
 from flask_login import login_required
 import boto3
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import NoCredentialsError, ClientError
 import os
 from config import db
 from models.task import Task
@@ -161,7 +171,7 @@ def delete_all_tasks():
 
 
 @login_required
-@tasks_bp.route('/upload/<int:task_id>', methods=['POST'])
+@tasks_bp.route("/upload/<int:task_id>", methods=["POST"])
 def upload_file(task_id: int):
     """
     Upload a file to an S3 bucket associated with a specific task.
@@ -200,19 +210,19 @@ def upload_file(task_id: int):
     - The task object is updated in the database with the filename of the uploaded file.
     - Proper error handling is in place to manage different failure scenarios.
     """
-    if 'file' not in request.files:
-        return 'No file part'
-    file = request.files['file']
-    if file.filename == '':
-        return 'No selected file'
+    if "file" not in request.files:
+        return "No file part"
+    file = request.files["file"]
+    if file.filename == "":
+        return "No selected file"
     if file:
         try:
             # Initialize the S3 client
-            s3_client = boto3.client('s3', region_name=os.getenv('S3_REGION'))
+            s3_client = boto3.client("s3", region_name=os.getenv("S3_REGION"))
 
             # You can use task_id to create a unique path in S3 if needed
-            s3_key = f'task_{task_id}/{file.filename}'
-            s3_client.upload_fileobj(file, os.getenv('S3_BUCKET'), s3_key)
+            s3_key = f"task_{task_id}/{file.filename}"
+            s3_client.upload_fileobj(file, os.getenv("S3_BUCKET"), s3_key)
 
             # Update the Task object with the file name
             task = Task.query.get(task_id)
@@ -221,16 +231,16 @@ def upload_file(task_id: int):
                 db.session.commit()
                 flash("File uploaded successfully", "success")
             else:
-                return 'Task not found', 404
+                return "Task not found", 404
         except NoCredentialsError:
-            return 'Credentials not available'
+            return "Credentials not available"
         except Exception as e:
-            return f'Error uploading file: {str(e)}'
+            return f"Error uploading file: {str(e)}"
         return redirect(url_for("home.home"))
 
 
 @login_required
-@tasks_bp.route('/download/<int:task_id>')
+@tasks_bp.route("/download/<int:task_id>")
 def download_file(task_id: int):
     """
     Download a file from an S3 bucket associated with a specific task.
@@ -270,21 +280,21 @@ def download_file(task_id: int):
     if not task or not task.file_name:
         abort(404, description="Task or file not found")
 
-    s3_key = f'task_{task_id}/{task.file_name}'
+    s3_key = f"task_{task_id}/{task.file_name}"
     try:
         # Initialize the S3 client
-        s3_client = boto3.client('s3', region_name=os.getenv('S3_REGION'))
+        s3_client = boto3.client("s3", region_name=os.getenv("S3_REGION"))
 
         # Download the file from S3
-        response = s3_client.get_object(Bucket=os.getenv('S3_BUCKET'), Key=s3_key)
-        file_content = response['Body'].read()
+        response = s3_client.get_object(Bucket=os.getenv("S3_BUCKET"), Key=s3_key)
+        file_content = response["Body"].read()
 
         # Send the file to the client for download
         return send_file(
             io.BytesIO(file_content),
             as_attachment=True,
             download_name=task.file_name,
-            mimetype='application/octet-stream'
+            mimetype="application/octet-stream",
         )
     except ClientError as e:
-        return f'Error downloading file: {str(e)}', 500
+        return f"Error downloading file: {str(e)}", 500
