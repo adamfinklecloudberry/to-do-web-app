@@ -323,9 +323,11 @@ def upload_file(task_id: int):
                 else:
                     raise e
 
+            # Read the file content
+            file_content = file.read()
+
             # Upload the new file to S3
-            file.seek(0)  # Ensure the file pointer is at the beginning
-            s3_client.upload_fileobj(file, os.getenv("S3_BUCKET"), s3_key)
+            s3_client.put_object(Bucket=os.getenv("S3_BUCKET"), Key=s3_key, Body=file_content)
 
             # Update the Task object with the file name
             task = Task.query.get(task_id)
