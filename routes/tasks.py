@@ -300,6 +300,9 @@ def upload_file(task_id: int):
         return redirect(url_for("home.home"))
 
     if file:
+        print(f"File: {file}")  # Debug print
+        print(f"File filename: {file.filename}")  # Debug print
+
         try:
             # Initialize the S3 client
             s3_client = boto3.client("s3", region_name=os.getenv("S3_REGION"))
@@ -321,6 +324,7 @@ def upload_file(task_id: int):
                     raise e
 
             # Upload the new file to S3
+            file.seek(0)  # Ensure the file pointer is at the beginning
             s3_client.upload_fileobj(file, os.getenv("S3_BUCKET"), s3_key)
 
             # Update the Task object with the file name
