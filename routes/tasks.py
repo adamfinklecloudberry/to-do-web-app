@@ -154,6 +154,7 @@ def delete_task(task_id: int):
         if task.file_name:
             s3_key = f"task_{task_id}/{task.file_name}"
             try:
+                s3_client = boto3.client("s3", region_name=os.getenv("S3_REGION"))
                 # Delete the file from S3
                 s3_client.delete_object(
                     Bucket=os.getenv("S3_BUCKET", "default-bucket-name"), Key=s3_key
