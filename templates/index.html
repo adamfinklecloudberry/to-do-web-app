@@ -122,6 +122,20 @@
         .delete-all-button:hover {
             background-color: #811621; /* Darker shade on hover */
         }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-emoji {
+            font-size: 24px;
+            cursor: pointer;
+            color: #007BFF;
+        }
+
+        .upload-emoji:hover {
+            color: #0056b3;
+        }
     </style>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
@@ -134,7 +148,6 @@
                 <div>
                 {% for category, message in messages %}
                     <div class="flash-message {{ category }}" style="display: block;">{{ message }}</div>
-                    <div class="progress-bar"><div class="progress"></div></div> <!-- Progress bar -->
                 {% endfor %}
                 </div>
             {% endif %}
@@ -175,6 +188,11 @@
         <li>Name - Due Date - Complete</li>
         {% for task in tasks %}
             <li>
+                <form action="/upload/{{ task.id }}" method="post" enctype="multipart/form-data" style="display:inline;">
+                    <label for="file-upload-{{ task.id }}" class="icon-button">📤</label>
+                    <input type="file" id="file-upload-{{ task.id }}" name="file" class="file-input" onchange="this.form.submit()">
+                </form>
+                <a href="/download/{{ task.id }}" class="icon-button">🔽</a>
                 <a href="/edit/{{ task.id }}">✏️</a>
                 <span>{{ task.name }}</span> - <span>{{ task.due_date }} -</span>
                 <form action="/complete/{{ task.id }}" method="post" style="display:inline;">

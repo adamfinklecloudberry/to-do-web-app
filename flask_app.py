@@ -21,10 +21,12 @@ import os
 
 app = Flask(__name__)
 
+
 # Initialize the app with the database and login manager
 init_app(app)
 
-# Register the blueprint
+
+# Register the blueprints
 app.register_blueprint(home_bp)
 app.register_blueprint(authentication_bp)
 app.register_blueprint(tasks_bp)
