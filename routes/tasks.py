@@ -291,10 +291,14 @@ def upload_file(task_id: int):
     - Proper error handling is in place to manage different failure scenarios.
     """
     if "file" not in request.files:
-        return "No file part"
+        flash("No file part", "error")
+        return redirect(url_for("home.home"))
+
     file = request.files["file"]
     if file.filename == "":
-        return "No selected file"
+        flash("No selected file", "error")
+        return redirect(url_for("home.home"))
+
     if file:
         try:
             # Initialize the S3 client
@@ -310,7 +314,7 @@ def upload_file(task_id: int):
                 s3_client.delete_object(Bucket=os.getenv("S3_BUCKET"), Key=s3_key)
                 flash("File overwritten", "danger")
             except ClientError as e:
-                if e.response["Error"]["Code"] == "404":
+                if e.response['Error']['Code'] == "404":
                     # The file does not exist, so we can proceed with the upload
                     pass
                 else:
@@ -329,10 +333,13 @@ def upload_file(task_id: int):
                 flash("Task not found", "error")
                 return redirect(url_for("home.home"))
         except NoCredentialsError:
-            return "Credentials not available"
+            flash("Credentials not available", "error")
+            return redirect(url_for("home.home"))
         except Exception as e:
-            return f"Error uploading file: {str(e)}"
-        return redirect(url_for("home.home"))
+            flash(f"Error uploading file: {str(e)}", "error")
+            return redirect(url_for("home.home"))
+
+    return redirect(url_for("home.home"))
 
 
 @login_required
